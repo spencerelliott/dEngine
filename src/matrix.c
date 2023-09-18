@@ -27,7 +27,7 @@ j		2   6  10  14
 */
 
 
-void matrixCopy(matrix_t from,matrix_t to)
+void matrixCopy(de_matrix_t from, de_matrix_t to)
 {
 	int i;
 	
@@ -36,7 +36,7 @@ void matrixCopy(matrix_t from,matrix_t to)
 }
 
 
-void matrix_multiplyVertexByMatrix(vec3_t pos, matrix_t mvp, vec3_t dest)
+void matrix_multiplyVertexByMatrix(vec3_t pos, de_matrix_t mvp, vec3_t dest)
 {
 	static vec4_t tmp;
 	
@@ -64,7 +64,7 @@ void matrix_multiplyVertexByMatrix(vec3_t pos, matrix_t mvp, vec3_t dest)
 }
 
 
-void matrix_multiply(const matrix_t m1, const matrix_t m2, matrix_t result)
+void matrix_multiply(const de_matrix_t m1, const de_matrix_t m2, de_matrix_t result)
 {
 	//Multiply matrix as column major indexation
 	
@@ -96,7 +96,7 @@ void matrix_multiply3x3(const matrix3x3_t m1, const matrix3x3_t m2, matrix3x3_t 
 	
 }
 
-void matrix_transform_vec4t(const matrix_t m1, const vec4_t vect , vec4_t dest)
+void matrix_transform_vec4t(const de_matrix_t m1, const vec4_t vect , vec4_t dest)
 {
 	dest[0] = m1[0] * vect[0] +  m1[4] * vect[1] + m1[8] * vect[2] + m1[12] * vect[3];
 	dest[1] = m1[1] * vect[0] +  m1[5] * vect[1] + m1[9] * vect[2] + m1[13] * vect[3];
@@ -111,7 +111,7 @@ void matrix_transform_vec3t(const matrix3x3_t m1, const vec3_t vect , vec3_t des
 	dest[2] = m1[2] * vect[0] +  m1[5] * vect[1] + m1[8] * vect[2] ;	
 }
 
-void matrix_print(matrix_t m)
+void matrix_print(de_matrix_t m)
 {
 	int i,j;
 	
@@ -146,7 +146,7 @@ void matrix_print3x3(matrix3x3_t m)
 	printf("-----------------\n");
 }
 
-void matrixLoadIdentity(matrix_t m)
+void matrixLoadIdentity(de_matrix_t m)
 {
 	int i;
 	for (i=0 ; i < 16; i++) 

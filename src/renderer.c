@@ -7,7 +7,7 @@
  */
 
 #include "renderer.h"
-#include <math.h>
+#include <internal_math.h>
 #include "renderer_fixed.h"
 #include "renderer_progr.h"
 #include "stats.h"
@@ -60,12 +60,6 @@ void SCR_Init(int rendererType,int viewPortWidth,int viewPortHeight)
 	{
 		printf("Running as openGL ES 1.1\n");
 		initFixedRenderer(&renderer);
-	}
-	
-	if (rendererType == GL_20_RENDERER)
-	{
-		printf("Running as openGL ES 2.0\n"); 
-		initProgrRenderer(&renderer);
 	}
 	
 	//Generate indices for text rendition
@@ -154,7 +148,7 @@ void SCR_RenderFrame(void)
 }
 
 
-inline void gluPerspective(float fovy, float aspect, float zNear, float zFar,matrix_t projectionMatrix)
+inline void gluPerspective(float fovy, float aspect, float zNear, float zFar, de_matrix_t projectionMatrix)
 {
 	float f  = (float)(1 / tan(fovy*DEG_TO_RAD/2));	
 	
@@ -169,30 +163,30 @@ inline void gluPerspective(float fovy, float aspect, float zNear, float zFar,mat
 
 
 
-inline  void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp ,matrix_t fModelView)
-{
-	vec3_t vN,vU,vV;
-	
-    // determine the new n
-    vectorSubtract(vEye,vLookat,vN);
-	
-    // determine the new u by crossing with the up vector
-    vectorCrossProduct(vUp, vN, vU) ;
-	
-    // normalize both the u and n vectors
-    normalize(vU) ; 
-		normalize(vN);
-	
-    // determine v by crossing n and u
-    vectorCrossProduct(vN,vU,vV);
-	
-    // create a model view matrix
-	fModelView[0] = vU[0];					fModelView[4] = vU[1];					fModelView[8] = vU[2];					fModelView[12] = - DotProduct(vEye,vU); 
-	fModelView[1] = vV[0];					fModelView[5] = vV[1];					fModelView[9] = vV[2];					fModelView[13] = - DotProduct(vEye,vV);
-	fModelView[2] = vN[0];					fModelView[6] = vN[1];					fModelView[10]= vN[2];					fModelView[14]=  - DotProduct(vEye,vN);
-	fModelView[3]=	0.0f;					fModelView[7]= 0.0f;					fModelView[11]= 0.0f;					fModelView[15]= 1.0f;
-
-}
+//inline  void gluLookAt(vec3_t vEye, vec3_t vLookat, vec3_t vUp , de_matrix_t fModelView)
+//{
+//	vec3_t vN,vU,vV;
+//
+//    // determine the new n
+//    vectorSubtract(vEye,vLookat,vN);
+//
+//    // determine the new u by crossing with the up vector
+//    vectorCrossProduct(vUp, vN, vU) ;
+//
+//    // normalize both the u and n vectors
+//    normalize(vU) ;
+//		normalize(vN);
+//
+//    // determine v by crossing n and u
+//    vectorCrossProduct(vN,vU,vV);
+//
+//    // create a model view matrix
+//	fModelView[0] = vU[0];					fModelView[4] = vU[1];					fModelView[8] = vU[2];					fModelView[12] = - DotProduct(vEye,vU);
+//	fModelView[1] = vV[0];					fModelView[5] = vV[1];					fModelView[9] = vV[2];					fModelView[13] = - DotProduct(vEye,vV);
+//	fModelView[2] = vN[0];					fModelView[6] = vN[1];					fModelView[10]= vN[2];					fModelView[14]=  - DotProduct(vEye,vN);
+//	fModelView[3]=	0.0f;					fModelView[7]= 0.0f;					fModelView[11]= 0.0f;					fModelView[15]= 1.0f;
+//
+//}
 
 
 void SCR_GetColorBuffer(uchar* data)

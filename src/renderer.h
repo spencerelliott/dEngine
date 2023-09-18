@@ -63,8 +63,8 @@ extern renderer_t renderer;
 void SCR_Init(int rendererType,int viewPortWidth,int viewPortHeight);
 void SCR_RenderFrame(void);
 void SCR_GetColorBuffer(uchar* data);
-void gluPerspective(float fovy,float aspect, float zNear, float zFar,matrix_t projectionMatrix);
-void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp,matrix_t fModelView );
+void gluPerspective(float fovy, float aspect, float zNear, float zFar, de_matrix_t projectionMatrix);
+void gluLookAt(vec3_t vEye, vec3_t vLookat, vec3_t vUp, de_matrix_t fModelView );
 
 /* TextureMagFilter */
 #define DE_GL_NEAREST                        0x2600

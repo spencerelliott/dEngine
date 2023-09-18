@@ -23,7 +23,7 @@ light_t light;
 entity_t map[256];
 uchar num_map_entities;
 
-void World_ReadMatrix(matrix_t target)
+void World_ReadMatrix(de_matrix_t target)
 {
 	int i,j ;
 	
@@ -35,7 +35,7 @@ void World_ReadMatrix(matrix_t target)
 }
 
 
-void World_ReadOBJs(matrix_t currentMatrix)
+void World_ReadOBJs(de_matrix_t currentMatrix)
 {
 	entity_t* currentEntity;
 	obj_t* obj;
@@ -65,7 +65,7 @@ void World_ReadOBJs(matrix_t currentMatrix)
 	}
 }
 
-void World_ReadMD5s(matrix_t currentMatrix)
+void World_ReadMD5s(de_matrix_t currentMatrix)
 {
 	md5_object_t* md5Object;
 	entity_t* currentEntity;
@@ -122,7 +122,7 @@ void World_ReadMD5s(matrix_t currentMatrix)
 void World_Loadmap(char* mapFileName)
 {
 	filehandle_t* mapFile ;
-	matrix_t currentMatrix;
+	de_matrix_t currentMatrix;
 	
 	mapFile = FS_OpenFile(mapFileName, "rt");
 	

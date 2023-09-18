@@ -123,12 +123,12 @@ void TEX_LoadTexture(texture_t* tmpTex)
 	{
 		loadNativePVRT(tmpTex);
 	}
-	
-	if (!strcmp(extension,"png"))
-	{
-		loadNativePNG(tmpTex);
-	}
-	
+
+//	if (!strcmp(extension,"png"))
+//	{
+//		loadNativePNG(tmpTex);
+//	}
+
 	if (tmpTex->format == TEXTURE_TYPE_UNKNOWN)
 	{
 		printf("[Texture loader] Texture type for %s is UNKNOWN !!\n",tmpTex->path);

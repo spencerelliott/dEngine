@@ -12,7 +12,7 @@
 #define DE_QUATERNION
 
 #include "globals.h"
-#include "math.h"
+#include "internal_math.h"
 #include "matrix.h"
 
 

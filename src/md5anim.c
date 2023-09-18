@@ -8,7 +8,7 @@
 
 
 #include "globals.h"
-#include "math.h"
+#include "internal_math.h"
 #include "quaternion.h"
 #include "md5model.h"
 

@@ -20,7 +20,7 @@ typedef unsigned short ushort ;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <internal_math.h>
 
 
 #define DEG_TO_RAD 2*3.14159265/360.0

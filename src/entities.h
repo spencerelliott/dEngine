@@ -14,7 +14,7 @@
 #define ENTITY_OBJ 1
 
 #include "globals.h"
-#include "math.h"
+#include "internal_math.h"
 #include "matrix.h"
 #include "material.h"
 
@@ -24,8 +24,8 @@ typedef struct entity_t {
 	
 	material_t* material;
 	
-	matrix_t matrix;
-	matrix_t cachePVMShadow;
+	de_matrix_t matrix;
+	de_matrix_t cachePVMShadow;
 	ushort id;
 	
 } entity_t;

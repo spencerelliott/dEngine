@@ -12,7 +12,7 @@
 //#define OBJ_FACE_CCW 
 #define OBJ_FACE_CW
 
-#include "math.h"
+#include "internal_math.h"
 #include "material.h"
 #include "entities.h"
 

@@ -10,7 +10,7 @@
 #define DE_CAMERA
 
 #include "globals.h"
-#include "math.h"
+#include "internal_math.h"
 #include "quaternion.h"
 
 typedef struct visibility_set_t

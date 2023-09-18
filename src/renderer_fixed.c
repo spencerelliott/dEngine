@@ -9,14 +9,15 @@
 #include "renderer_fixed.h"
 #include "dEngine.h"
 #include "camera.h"
-#include <OpenGLES/ES1/gl.h>
+//#include <OpenGLES/ES1/gl.h>
+#include <GL/gl.h>
 #include "stats.h"
 #include "world.h"
 #include "obj.h"
 
-matrix_t projectionMatrix;
-matrix_t modelViewMatrix;
-matrix_t textureMatrix = { 1.0f/32767,0,0,0,0,1.0f/32767,0,0,0,0,1,0,0,0,0,1};	//Unpacking matrix
+de_matrix_t projectionMatrix;
+de_matrix_t modelViewMatrix;
+de_matrix_t textureMatrix = {1.0f / 32767, 0, 0, 0, 0, 1.0f / 32767, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};	//Unpacking matrix
 
 void SCR_CheckErrors(char* step, char* details)
 {
@@ -67,7 +68,7 @@ void Set2DF(void)
 	
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-	glOrthof(-renderWidth, renderWidth, -renderHeight, renderHeight, -1, 1);
+	glOrtho(-renderWidth, renderWidth, -renderHeight, renderHeight, -1, 1);
 	//glOrthof(-1.0f, 1.0f, -1.5f, 1.5f, -1.0f, 1.0f);
 	
 	
@@ -114,10 +115,10 @@ void UpLoadTextureToGPUF(texture_t* texture)
 	glGenTextures(1, &texture->textureId);
 	glBindTexture(GL_TEXTURE_2D, texture->textureId);
 	
-	if (texture->format == TEXTURE_GL_RGB ||texture->format == TEXTURE_GL_RGBA)
+//	if (texture->format == TEXTURE_GL_RGB ||texture->format == TEXTURE_GL_RGBA)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
-	else
-		glCompressedTexImage2D(GL_TEXTURE_2D, 0, texture->format, texture->width,texture-> height, 0, texture->dataLength, texture->data);
+//	else
+//		glCompressedTexImage2D(GL_TEXTURE_2D, 0, texture->format, texture->width,texture-> height, 0, texture->dataLength, texture->data);
 	
 	
 	

@@ -6,7 +6,7 @@
  *
  */
 
-#include "math.h"
+#include "internal_math.h"
 #include <math.h>
 
 void vectorCrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross ) 

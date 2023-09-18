@@ -9,6 +9,7 @@
 #ifndef DE_MATH
 #define DE_MATH 1
 
+#include <math.h>
 #include "config.h"
 
 

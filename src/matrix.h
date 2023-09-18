@@ -10,15 +10,15 @@
 #ifndef DE_MATRIX
 #define DE_MATRIX
 
-#include "math.h"
+#include "internal_math.h"
 
-typedef float matrix_t[16];
-void matrix_multiplyVertexByMatrix(vec3_t pos, matrix_t modelViewProjectionMatrix, vec3_t dest);
-void matrix_multiply(const matrix_t m1, const matrix_t m2, matrix_t dest);
-void matrix_transform_vec4t(const matrix_t m1, const vec4_t vect , vec4_t dest);
-void matrix_print(matrix_t m);
-void matrixLoadIdentity(matrix_t m);
-void matrixCopy(matrix_t from,matrix_t to);
+typedef float de_matrix_t[16];
+void matrix_multiplyVertexByMatrix(vec3_t pos, de_matrix_t modelViewProjectionMatrix, vec3_t dest);
+void matrix_multiply(const de_matrix_t m1, const de_matrix_t m2, de_matrix_t dest);
+void matrix_transform_vec4t(const de_matrix_t m1, const vec4_t vect , vec4_t dest);
+void matrix_print(de_matrix_t m);
+void matrixLoadIdentity(de_matrix_t m);
+void matrixCopy(de_matrix_t from, de_matrix_t to);
 
 
 
