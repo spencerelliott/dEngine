@@ -121,6 +121,7 @@ void TEX_LoadTexture(texture_t* tmpTex)
 	
 	if (!strcmp(extension,"pvr") )
 	{
+        printf("[Texture Loader] Attempting to load PVR texture\n");
 		loadNativePVRT(tmpTex);
 	}
 

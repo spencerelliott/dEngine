@@ -347,14 +347,13 @@ void MATLIB_MakeAvailable(material_t* material)
 		return;
 	
 	
-	//printf("[MATLIB] Loading MAT %s\n",material->name);
+	printf("[MATLIB] Loading MAT %s\n",material->name);
 	
 	if ((material->prop & PROP_DIFF) == PROP_DIFF)
 	{
-		
-		
-		//printf("	[MATLIB] Loading %s\n",material->textures[TEXTURE_DIFFUSE]->path);
+		printf("[MATLIB] Loading %s\n",material->textures[TEXTURE_DIFFUSE]->path);
 		TEX_LoadTexture(material->textures[TEXTURE_DIFFUSE]);
+        printf("[MATLIB] Uploading %s to GPU\n",material->textures[TEXTURE_DIFFUSE]->path);
 		renderer.UpLoadTextureToGpu(material->textures[TEXTURE_DIFFUSE]);
 		
 		if (
@@ -367,14 +366,14 @@ void MATLIB_MakeAvailable(material_t* material)
 	
 	if ((material->prop & PROP_BUMP) == PROP_BUMP )
 	{
-		//printf("	[MATLIB] Loading %s\n",material->textures[TEXTURE_BUMP]->path);
+		printf("[MATLIB] Loading %s\n",material->textures[TEXTURE_BUMP]->path);
 		TEX_LoadTexture(material->textures[TEXTURE_BUMP]);
 		renderer.UpLoadTextureToGpu(material->textures[TEXTURE_BUMP]);
 	}
 	
 	if ((material->prop & PROP_SPEC) == PROP_SPEC )
 	{
-		//printf("	[MATLIB] Loading %s\n",material->textures[TEXTURE_SPECULAR]->path);
+		printf("[MATLIB] Loading %s\n",material->textures[TEXTURE_SPECULAR]->path);
 		TEX_LoadTexture(material->textures[TEXTURE_SPECULAR]);
 		renderer.UpLoadTextureToGpu(material->textures[TEXTURE_SPECULAR]);
 	}

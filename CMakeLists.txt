@@ -106,11 +106,11 @@ if(PLATFORM_DREAMCAST)
     #)
 
     if(EXISTS ${ROMDISK_DIR})
-        message("Generating assets so something is available for the romdisk...")
-        execute_process(
-                COMMAND bash -c "./make_assets.sh dc"
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        )
+#        message("Generating assets so something is available for the romdisk...")
+#        execute_process(
+#                COMMAND bash -c "./make_assets.sh dc"
+#                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+#        )
 
         if(EXISTS ${ASSETS_DIR})
             message("Setting up romdisk generation...")

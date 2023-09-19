@@ -111,12 +111,14 @@ void UpLoadTextureToGPUF(texture_t* texture)
 {
 	if (!texture || !texture->data || texture->textureId != 0)
 		return;
-	
+
+    printf("[UpLoadTextureToGPUF] Generating texture %u\n", texture->textureId);
 	glGenTextures(1, &texture->textureId);
+    printf("[UpLoadTextureToGPUF] Binding texture %u\n", texture->textureId);
 	glBindTexture(GL_TEXTURE_2D, texture->textureId);
 	
 //	if (texture->format == TEXTURE_GL_RGB ||texture->format == TEXTURE_GL_RGBA)
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGB5, GL_UNSIGNED_BYTE, texture->data);
 //	else
 //		glCompressedTexImage2D(GL_TEXTURE_2D, 0, texture->format, texture->width,texture-> height, 0, texture->dataLength, texture->data);
 	

@@ -9,7 +9,7 @@
 #include "ItextureLoader.h"
 #include "filesystem.h"
 
-static char gPVRTexIdentifier[4] = "PVR!";
+static char gPVRTexIdentifier[4] = "DTEX";
 
 
 typedef struct _PVRTexHeader
@@ -29,6 +29,14 @@ typedef struct _PVRTexHeader
 		unsigned int numSurfs;
 	} PVRTexHeader;
 
+typedef struct _DTEXTexHeader {
+    unsigned int magic;
+    unsigned short width;
+    unsigned short height;
+    unsigned int type;
+    unsigned int size;
+} DTEXTexHeader;
+
 #define kPVRTextureFlagTypePVRTC_2 24
 #define kPVRTextureFlagTypePVRTC_4 25
 #define PVR_TEXTURE_FLAG_TYPE_MASK	0xff
@@ -37,6 +45,7 @@ typedef struct _PVRTexHeader
 #define GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG			0x8C01
 #define GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG			0x8C02
 #define GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG			0x8C03
+#define GL_COMPRESSED_RGB565_PVRTC_IMG              0x8C04
 
 #define MAX(A,B) ((A) > (B))? (A) : (B)
 
@@ -44,15 +53,13 @@ typedef struct _PVRTexHeader
 
 void loadNativePVRT(texture_t* texture)
 {
-	PVRTexHeader* pvrHeader;
+	DTEXTexHeader* pvrHeader;
 	unsigned int flags, pvrTag;
 	unsigned int formatFlags;
 
 	unsigned int  blockSize = 0, widthBlocks = 0, heightBlocks = 0;
-	unsigned int  width = 0, height = 0, bpp = 4;
-	
-	
-	
+	unsigned int  width = 0, height = 0, bpp = 16;
+
 	texture->file = FS_OpenFile(texture->path,"rb");
 	
 	if (!texture->file)
@@ -61,13 +68,13 @@ void loadNativePVRT(texture_t* texture)
 		return;
 	}
 	
-	pvrHeader = (PVRTexHeader *)texture->file->ptrStart;
+	pvrHeader = (DTEXTexHeader *)texture->file->ptrStart;
 	
 	texture->data = malloc(texture->file->filesize - sizeof(PVRTexHeader)) ;
 	memcpy(texture->data, texture->file->ptrStart+sizeof(PVRTexHeader), texture->file->filesize - sizeof(PVRTexHeader));
 	
 	
-	pvrTag = pvrHeader->pvrTag;
+	pvrTag = pvrHeader->magic;
 	
 	//Analysing header magic number
 	if (gPVRTexIdentifier[0] != ((pvrTag >>  0) & 0xff) ||
@@ -75,75 +82,15 @@ void loadNativePVRT(texture_t* texture)
 		gPVRTexIdentifier[2] != ((pvrTag >> 16) & 0xff) ||
 		gPVRTexIdentifier[3] != ((pvrTag >> 24) & 0xff))
 	{
+        printf("[loadNativePVRT] Invalid magic number: 0x%08x (%c%c%c%c)\n", pvrTag, ((pvrTag >>  0) & 0xff), ((pvrTag >>  8) & 0xff), ((pvrTag >>  16) & 0xff), ((pvrTag >>  24) & 0xff));
 		return ;
 	}
-	
-	//
-	flags = pvrHeader->flags;
-	formatFlags = flags & PVR_TEXTURE_FLAG_TYPE_MASK;
-	
-	if (formatFlags == kPVRTextureFlagTypePVRTC_4 || formatFlags == kPVRTextureFlagTypePVRTC_2)
-	{
 
-		if (pvrHeader->bitmaskAlpha)
-		{
-			
-			if (formatFlags == kPVRTextureFlagTypePVRTC_4)
-			{
-				texture->format = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
-				//printf("GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG.\n");
-			}
-			else if (formatFlags == kPVRTextureFlagTypePVRTC_2)
-			{
-				texture->format = GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
-				//printf("GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG.\n");
-			}
-		}
-		else
-		{
-			
-			if (formatFlags == kPVRTextureFlagTypePVRTC_4)
-			{
-				texture->format = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
-			//	printf("GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG.\n");
-			}
-			else if (formatFlags == kPVRTextureFlagTypePVRTC_2)
-			{
-				texture->format = GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
-			//	printf("GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG.\n");
-			}
-		}
-		
-		width = pvrHeader->width;
-		height = pvrHeader->height;
-		texture->width = width;
-		texture->height = height;
-		
-		if (formatFlags == kPVRTextureFlagTypePVRTC_4)
-		{
-			blockSize = 4 * 4; // Pixel by pixel block size for 4bpp
-			widthBlocks = width / 4;
-			heightBlocks = height / 4;
-			bpp = 4;
-		}
-		else
-		{
-			blockSize = 8 * 4; // Pixel by pixel block size for 2bpp
-			widthBlocks = width / 8;
-			heightBlocks = height / 4;
-			bpp = 2;
-		}
-		
-		// Clamp to minimum number of blocks
-		if (widthBlocks < 2)
-			widthBlocks = 2;
-		if (heightBlocks < 2)
-			heightBlocks = 2;
-		
-		texture->dataLength = widthBlocks * heightBlocks * ((blockSize  * bpp) / 8);
-		
+	flags = pvrHeader->type;
+	formatFlags = flags;
 
-		
-		
-	}
+    printf("[loadNativePVRT] PVR texture format: 0x%08x\n", formatFlags);
+
+    texture->format = GL_COMPRESSED_RGB565_PVRTC_IMG;
+    texture->dataLength = pvrHeader->size * pvrHeader->size * bpp;
 }

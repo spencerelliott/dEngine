@@ -67,6 +67,7 @@ void World_ReadOBJs(de_matrix_t currentMatrix)
 
 void World_ReadMD5s(de_matrix_t currentMatrix)
 {
+    printf("[World_ReadMD5s] Loading MD5 models\n");
 	md5_object_t* md5Object;
 	entity_t* currentEntity;
 	md5_mesh_t* currentMesh;
@@ -136,23 +137,33 @@ void World_Loadmap(char* mapFileName)
 	
 	LE_pushLexer();
 	LE_init(mapFile);
+
+    printf("[World_Loadmap] Initialized lexer\n");
 	
 	while(LE_hasMoreData())
 	{
+        printf("[World_Loadmap] lexer has more data\n");
 		LE_readToken();
 		
-		if (!strcmp(LE_getCurrentToken(), "matrix"))
-			World_ReadMatrix(currentMatrix);
+		if (!strcmp(LE_getCurrentToken(), "matrix")) {
+            printf("[World_Loadmap] Reading world matrix\n");
+            World_ReadMatrix(currentMatrix);
+        }
 		
 		if (!strcmp(LE_getCurrentToken(), "entities"))
 		{
+            printf("[World_Loadmap] Reading entity: %s\n", LE_getCurrentToken());
 			LE_readToken(); // OBJ or MD5 ?
 			
-			if (!strcmp("OBJ",LE_getCurrentToken()))
-				World_ReadOBJs(currentMatrix);
+			if (!strcmp("OBJ",LE_getCurrentToken())) {
+                printf("[World_Loadmap] Reading object file: %s\n", LE_getCurrentToken());
+                World_ReadOBJs(currentMatrix);
+            }
 				
-			if (!strcmp("MD5",LE_getCurrentToken()))
-				World_ReadMD5s(currentMatrix);
+			if (!strcmp("MD5",LE_getCurrentToken())) {
+                printf("[World_Loadmap] Reading MD5s\n");
+                World_ReadMD5s(currentMatrix);
+            }
 
 		}
 	}
