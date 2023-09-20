@@ -6,6 +6,7 @@
 #include <GL/gl.h>
 #include <GL/glkos.h>
 #include <dEngine.h>
+#include "renderer.h"
 
 KOS_INIT_FLAGS(INIT_DEFAULT);
 
@@ -16,6 +17,8 @@ int main(int argc, char** argv) {
     glKosInit();
 
     setenv("CWD", "/cd", 1);
+
+    renderer.statsEnabled = 1;
 
     dEngine_Init(GL_11_RENDERER, 640, 480);
 

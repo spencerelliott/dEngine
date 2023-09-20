@@ -19,10 +19,11 @@ typedef float vec3_t[3];
 typedef float vec4_t[4];
 typedef short vec3short_t[3];
 typedef short vec2short_t[2];
+typedef int vec3int_t[3];
 
 typedef  struct vertex_t {
 	vec3_t pos;
-	vec3short_t normal;
+    vec3int_t normal;
 	vec3short_t tangent;
 	vec2short_t text;
 } vertex_t;

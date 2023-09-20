@@ -1,10 +1,10 @@
 newmtl models/graphics/hellknightSkin
-map_Kd data/texturesPVR/monsters/hellknight.png.rgb565.pvr
-BumpKd data/texturesPVR/monsters/hellknightBump.png.rgb565.pvr
+map_Kd data/texturesPVR/monsters/hellknight.png.argb4444.pvr
+BumpKd data/texturesPVR/monsters/hellknightBump.png.argb4444.pvr
 illum 28
 
 newmtl models/graphics/hellbaronSkin
-map_Kd data/texturesPVR/monsters/hellBaronDiff.png.rgb565.pvr
-BumpKd data/texturesPVR/monsters/hellknightBump.png.rgb565.pvr
-SpecKd data/texturesPVR/monsters/hellBaronSpec.png.rgb565.pvr
+map_Kd data/texturesPVR/monsters/hellBaronDiff.png.argb4444.pvr
+BumpKd data/texturesPVR/monsters/hellknightBump.png.argb4444.pvr
+SpecKd data/texturesPVR/monsters/hellBaronSpec.png.argb4444.pvr
 illum 28

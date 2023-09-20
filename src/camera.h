@@ -35,10 +35,6 @@ typedef struct frames_t
 
 typedef struct 
 {
-		//vec3_t vEye ;
-		//vec3_t vLookat ;
-		//vec3_t vUp ;
-	
 	vec4_t position ;
 	
 	vec3_t forward ;
@@ -52,11 +48,12 @@ typedef struct
 	float fov;
 	float zNear;
 	float zFar;
-	
-	uchar recording;
+
 	cam_path_t path;
 	
 	uchar playing;
+    uchar recording;
+    uchar spare[2];
 	char  recordFilename[256];
 } camera_t;
 

@@ -15,7 +15,7 @@ void FM_Init( void )
 {
 	
 			
-	FM_createFont("data/font/font1.png");	
+	FM_createFont("data/font/font1.pvr");
 	
 	
 	font.nSize = 2;

@@ -8,6 +8,11 @@
 
 #include "ItextureLoader.h"
 #include "filesystem.h"
+#include "GL/gl.h"
+#include "GL/glu.h"
+#include "GL/glkos.h"
+#include "GL/glext.h"
+
 
 static char gPVRTexIdentifier[4] = "DTEX";
 
@@ -70,9 +75,8 @@ void loadNativePVRT(texture_t* texture)
 	
 	pvrHeader = (DTEXTexHeader *)texture->file->ptrStart;
 	
-	texture->data = malloc(texture->file->filesize - sizeof(PVRTexHeader)) ;
-	memcpy(texture->data, texture->file->ptrStart+sizeof(PVRTexHeader), texture->file->filesize - sizeof(PVRTexHeader));
-	
+	texture->data = malloc(texture->file->filesize - sizeof(DTEXTexHeader)) ;
+	memcpy(texture->data, texture->file->ptrStart+sizeof(DTEXTexHeader), texture->file->filesize - sizeof(DTEXTexHeader));
 	
 	pvrTag = pvrHeader->magic;
 	
@@ -86,11 +90,61 @@ void loadNativePVRT(texture_t* texture)
 		return ;
 	}
 
-	flags = pvrHeader->type;
-	formatFlags = flags;
+    texture->width = pvrHeader->width;
+    texture->height = pvrHeader->height;
+
+    GLboolean twiddled = (pvrHeader->type & (1 << 25)) < 1;
+    GLboolean compressed = (pvrHeader->type & (1 << 29)) > 0;
+    GLboolean mipmapped = (pvrHeader->type & (1 << 30)) > 0;
+    GLboolean strided = (pvrHeader->type & (1 << 24)) > 0;
+
+
+    flags = pvrHeader->type;
+	formatFlags = (pvrHeader->type >> 27) & 0b111;
+
+    GLuint COMPRESSED_MASK = 4;
+    GLuint TWIDDLED_MASK = 2;
+    GLuint MIPMAPPED_MASK = 1;
+
+    GLuint lookup[8] = {0};
+
+    switch(formatFlags) {
+        case 0:
+            lookup[COMPRESSED_MASK] = GL_COMPRESSED_ARGB_1555_VQ_KOS;
+            lookup[COMPRESSED_MASK | TWIDDLED_MASK] = GL_COMPRESSED_ARGB_1555_VQ_TWID_KOS;
+            lookup[COMPRESSED_MASK | MIPMAPPED_MASK] = GL_COMPRESSED_ARGB_1555_VQ_MIPMAP_KOS;
+            lookup[COMPRESSED_MASK | TWIDDLED_MASK | MIPMAPPED_MASK] = GL_COMPRESSED_ARGB_1555_VQ_MIPMAP_TWID_KOS;
+            lookup[TWIDDLED_MASK] = GL_UNSIGNED_SHORT_1_5_5_5_REV_TWID_KOS;
+            lookup[TWIDDLED_MASK | MIPMAPPED_MASK] = GL_UNSIGNED_SHORT_1_5_5_5_REV_TWID_KOS;
+            lookup[0] = GL_UNSIGNED_SHORT_1_5_5_5_REV;
+            break;
+        case 1:
+            lookup[COMPRESSED_MASK] = GL_COMPRESSED_RGB_565_VQ_KOS;
+            lookup[COMPRESSED_MASK | TWIDDLED_MASK] = GL_COMPRESSED_RGB_565_VQ_TWID_KOS;
+            lookup[COMPRESSED_MASK | MIPMAPPED_MASK] = GL_COMPRESSED_RGB_565_VQ_MIPMAP_KOS;
+            lookup[COMPRESSED_MASK | TWIDDLED_MASK | MIPMAPPED_MASK] = GL_COMPRESSED_RGB_565_VQ_MIPMAP_TWID_KOS;
+            lookup[TWIDDLED_MASK] = GL_UNSIGNED_SHORT_5_6_5_TWID_KOS;
+            lookup[TWIDDLED_MASK | MIPMAPPED_MASK] = GL_UNSIGNED_SHORT_5_6_5_TWID_KOS;
+            lookup[0] = GL_UNSIGNED_SHORT_5_6_5;
+            break;
+        case 2:
+            lookup[COMPRESSED_MASK] = GL_COMPRESSED_ARGB_4444_VQ_KOS;
+            lookup[COMPRESSED_MASK | TWIDDLED_MASK] = GL_COMPRESSED_ARGB_4444_VQ_TWID_KOS;
+            lookup[COMPRESSED_MASK | MIPMAPPED_MASK] = GL_COMPRESSED_ARGB_4444_VQ_MIPMAP_KOS;
+            lookup[COMPRESSED_MASK | TWIDDLED_MASK | MIPMAPPED_MASK] = GL_COMPRESSED_ARGB_4444_VQ_MIPMAP_TWID_KOS;
+            lookup[TWIDDLED_MASK] = GL_UNSIGNED_SHORT_4_4_4_4_REV_TWID_KOS;
+            lookup[TWIDDLED_MASK | MIPMAPPED_MASK] = GL_UNSIGNED_SHORT_4_4_4_4_REV_TWID_KOS;
+            lookup[0] = GL_UNSIGNED_SHORT_4_4_4_4_REV;
+            break;
+        default:
+            printf("[ERROR] Unknown format\n");
+    }
+
 
     printf("[loadNativePVRT] PVR texture format: 0x%08x\n", formatFlags);
 
-    texture->format = GL_COMPRESSED_RGB565_PVRTC_IMG;
+    texture->format = (formatFlags == 1) ? GL_RGB : GL_BGRA;
+    texture->internal_format = (formatFlags == 1) ? GL_RGB : GL_RGBA;
+    texture->type = lookup[(compressed << 2) | (twiddled << 1) | mipmapped];
     texture->dataLength = pvrHeader->size * pvrHeader->size * bpp;
 }

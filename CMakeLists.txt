@@ -105,6 +105,9 @@ if(PLATFORM_DREAMCAST)
     #    src/dc/snd_dc.c
     #)
 
+    add_compile_options(-g)
+    add_link_options("-Wl,-Map=output.map")
+
     if(EXISTS ${ROMDISK_DIR})
 #        message("Generating assets so something is available for the romdisk...")
 #        execute_process(

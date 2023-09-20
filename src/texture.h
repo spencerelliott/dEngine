@@ -32,6 +32,8 @@ typedef struct  {
 	uint height;
 	uint bpp;
 	uint format;
+    uint internal_format;
+    uint type;
 	
 } texture_t;
 

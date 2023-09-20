@@ -11,6 +11,8 @@
 #include "camera.h"
 //#include <OpenGLES/ES1/gl.h>
 #include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glkos.h>
 #include "stats.h"
 #include "world.h"
 #include "obj.h"
@@ -34,12 +36,15 @@ void SCR_CheckErrors(char* step, char* details)
 
 void SetupCameraF(void)
 {
+    printf("[SetupCameraF] Setting up camera lookat point\n");
 	vec3_t vLookat;
 	
-	vectorAdd(camera.position,camera.forward,vLookat);
+	vectorAdd(camera.position, camera.forward,vLookat);
 	
-	gluLookAt(camera.position, vLookat, camera.up, modelViewMatrix);
-	glLoadMatrixf(modelViewMatrix);
+	gluLookAt(camera.position[0], camera.position[1], camera.position[2], vLookat[0], vLookat[1], vLookat[2],
+              camera.up[0], camera.up[1], camera.up[2]);
+
+    printf("[SetupCameraF] Camera set up\n");
 }
 
 
@@ -103,7 +108,8 @@ void Set3DF(void)
 
 void StopRenditionF(void)
 {
-	
+    printf("[StopRenditionF] Swapping framebuffers\n");
+	glKosSwapBuffers();
 }
 
 
@@ -116,9 +122,11 @@ void UpLoadTextureToGPUF(texture_t* texture)
 	glGenTextures(1, &texture->textureId);
     printf("[UpLoadTextureToGPUF] Binding texture %u\n", texture->textureId);
 	glBindTexture(GL_TEXTURE_2D, texture->textureId);
+
+    printf("[UpLoadTextureToGPUF] Texture size : %dx%d\n", texture->width, texture->height);
 	
 //	if (texture->format == TEXTURE_GL_RGB ||texture->format == TEXTURE_GL_RGBA)
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGB5, GL_UNSIGNED_BYTE, texture->data);
+		glTexImage2D(GL_TEXTURE_2D, 0, texture->internal_format, texture->width, texture->height, 0, texture->format, texture->type, texture->data);
 //	else
 //		glCompressedTexImage2D(GL_TEXTURE_2D, 0, texture->format, texture->width,texture-> height, 0, texture->dataLength, texture->data);
 	
@@ -267,7 +275,7 @@ void RenderNormalsF(md5_mesh_t* currentMesh)
 
 void RenderEntitiesMD5F(void* md5Void)
 {
-		
+    printf("[RenderEntitiesMD5F] Rendering all MD5 models\n");
 	
 	md5_object_t* md5Object;
 	md5_mesh_t* currentMesh;
@@ -283,10 +291,11 @@ void RenderEntitiesMD5F(void* md5Void)
 	for (i = 0; i < 1/*md5Object.md5Model.num_meshes*/; i++)
     {
 		currentMesh = &md5Object->md5Model.meshes[i];
+        printf("[RenderEntitiesMD5F] Rendering mesh: 0x%08x\n", currentMesh);
 				
 		//RenderNormalsF( currentMesh);
 		
-		glNormalPointer(GL_SHORT, sizeof(vertex_t), currentMesh->vertexArray[0].normal);
+		glNormalPointer(GL_INT, sizeof(vertex_t), currentMesh->vertexArray[0].normal);
 		glTexCoordPointer (2, GL_SHORT, sizeof(vertex_t), currentMesh->vertexArray[0].text);	
 		glVertexPointer (3, GL_FLOAT, sizeof(vertex_t), currentMesh->vertexArray[0].pos);	
 		glDrawElements (GL_TRIANGLES, currentMesh->num_tris * 3, GL_UNSIGNED_SHORT, currentMesh->vertexIndices);
@@ -319,18 +328,24 @@ void RenderEntitiesF(void)
 	int i;
 	entity_t* entity;
 	
-	
+	printf("[RenderEntitiesF] Begin rendering entities\n");
 	
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
+
+    printf("[RenderEntitiesF] Loaded texture matrix\n");
+
 	glMatrixMode(GL_MODELVIEW);
 	
 	glMatrixMode(GL_PROJECTION);
-	gluPerspective(camera.fov, camera.aspect,camera.zNear, camera.zFar, projectionMatrix);
-	glLoadMatrixf(projectionMatrix);
+	gluPerspective(camera.fov, camera.aspect, camera.zNear, camera.zFar);
+
+    printf("[RenderEntitiesF] Loaded projection matrix\n");
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+    printf("[RenderEntitiesF] Loaded modelview matrix\n");
 
 	
 	SetupCameraF();
@@ -453,7 +468,7 @@ void initFixedRenderer(renderer_t* renderer)
 	
 	//glEnable(GL_LIGHTING);
 	
-	glClearColor(0.0f, 0.0f, 0.0f,1.0f);
+	glClearColor(0.5f, 0.5f, 0.5f,1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f,1.0f);
 	
 	glEnable ( GL_COLOR_MATERIAL ) ;
