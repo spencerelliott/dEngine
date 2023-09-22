@@ -20,17 +20,20 @@ typedef float vec4_t[4];
 typedef short vec3short_t[3];
 typedef short vec2short_t[2];
 typedef int vec3int_t[3];
+typedef unsigned char vec4uchar_t[4];
 
 typedef  struct vertex_t {
 	vec3_t pos;
     vec3int_t normal;
+    vec4uchar_t col;
 	vec3short_t tangent;
 	vec2short_t text;
 } vertex_t;
 
 
 typedef  struct svertex_t {
-	vec3short_t pos;
+	vec3_t pos;
+    vec4uchar_t col;
 	vec2_t text;
 } svertex_t;
 

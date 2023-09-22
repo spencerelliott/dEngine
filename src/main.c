@@ -18,7 +18,8 @@ int main(int argc, char** argv) {
 
     setenv("CWD", "/cd", 1);
 
-    renderer.statsEnabled = 1;
+    //renderer.statsEnabled = 1;
+
 
     dEngine_Init(GL_11_RENDERER, 640, 480);
 

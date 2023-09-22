@@ -108,22 +108,22 @@ void DrawStats()
 	
 	renderer.SetTexture(font.texfont->textureId);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,fpsText,300,400);
+	numVertices = Font_GenerateStringVertexArray(vertexString,fpsText,100,40);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,teSwText,300, 360);
+	numVertices = Font_GenerateStringVertexArray(vertexString,teSwText,100, 80);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,polCnText,300, 320);
+	numVertices = Font_GenerateStringVertexArray(vertexString,polCnText,100, 120);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,msText,300, 280);
+	numVertices = Font_GenerateStringVertexArray(vertexString,msText,100, 160);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,shSwText,300, 240);
+	numVertices = Font_GenerateStringVertexArray(vertexString,shSwText,100, 200);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,bldwText,300, 200);
+	numVertices = Font_GenerateStringVertexArray(vertexString,bldwText,100, 240);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
 }

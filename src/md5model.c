@@ -306,7 +306,7 @@ void FreeModel (md5_model_t *mdl)
 void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
 
 {
-    printf("[GenerateGPUVertices] Generating vertices for frame: Mesh = 0x%08x; num verts = %d\n", mesh, mesh->num_verts);
+    //printf("[GenerateGPUVertices] Generating vertices for frame: Mesh = 0x%08x; num verts = %d\n", mesh, mesh->num_verts);
 	int i, j;
     float maxZ = 0.0f, minZ = 99999.9f;
 	const md5_weight_t *weight;
@@ -338,9 +338,9 @@ void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
 			
 			// Calculate transformed vertex for this weight 
 			Quat_rotatePoint (joint->orient, weight->pos, tmpVertex);
-			currentVertex->pos[0] += ((joint->pos[0] + tmpVertex[0]) * weight->bias) * 0.02f;
-			currentVertex->pos[1] += ((joint->pos[1] + tmpVertex[1]) * weight->bias) * 0.02f;
-			currentVertex->pos[2] += ((joint->pos[2] + tmpVertex[2]) * weight->bias) * 0.02f;
+			currentVertex->pos[0] += ((joint->pos[0] + tmpVertex[0]) * weight->bias);
+			currentVertex->pos[1] += ((joint->pos[1] + tmpVertex[1]) * weight->bias);
+			currentVertex->pos[2] += ((joint->pos[2] + tmpVertex[2]) * weight->bias);
 			
 			// Same thing for normal
 			Quat_rotateShortPoint (joint->orient, weight->normal, tmpNormal);
@@ -351,6 +351,11 @@ void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
 			vectorAdd(tangentAccumulator,tmpTangent,tangentAccumulator);
 			#endif
 		}
+
+        currentVertex->col[0] = 255;
+        currentVertex->col[1] = 255;
+        currentVertex->col[2] = 255;
+        currentVertex->col[3] = 255;
 
 		//Need to normalize normal
 		normalize(normalAccumulator);
@@ -372,9 +377,9 @@ void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
 		currentVertex++;
     }
 
-    if (mesh->num_verts > 0) {
-        printf("[GenerateGPUVertices] Max Z: %f, Min Z: %f\n", maxZ, minZ);
-    }
+//    if (mesh->num_verts > 0) {
+//        printf("[GenerateGPUVertices] Max Z: %f, Min Z: %f\n", maxZ, minZ);
+//    }
 }
 
 void GenerateLightingInfo (const md5_mesh_t *mesh, md5_joint_t *skeleton)
@@ -507,10 +512,10 @@ void GenerateLightingInfo (const md5_mesh_t *mesh, md5_joint_t *skeleton)
 
 void MD5_Update(md5_object_t* md5Object)
 {
-    printf("[MD5_Update] Updating MD5 model\n");
+    //printf("[MD5_Update] Updating MD5 model\n");
 	int currentFrame ;
 	md5_mesh_t* currentMesh;
-	float absoluteTimePointerAnim;
+	float absoluteTimePointerAnim = 0.0f;
 	int i;
 	
 	absoluteTimePointerAnim = simulationTime/1000.0*md5Object->md5Anim.frameRate;

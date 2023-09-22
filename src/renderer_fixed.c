@@ -36,7 +36,7 @@ void SCR_CheckErrors(char* step, char* details)
 
 void SetupCameraF(void)
 {
-    printf("[SetupCameraF] Setting up camera lookat point\n");
+    //printf("[SetupCameraF] Setting up camera lookat point\n");
 	vec3_t vLookat;
 	
 	vectorAdd(camera.position, camera.forward,vLookat);
@@ -44,7 +44,7 @@ void SetupCameraF(void)
 	gluLookAt(camera.position[0], camera.position[1], camera.position[2], vLookat[0], vLookat[1], vLookat[2],
               camera.up[0], camera.up[1], camera.up[2]);
 
-    printf("[SetupCameraF] Camera set up\n");
+    //printf("[SetupCameraF] Camera set up\n");
 }
 
 
@@ -86,14 +86,16 @@ void Set2DF(void)
 
 void Set3DF(void)
 {
-	
+    glEnable(GL_TEXTURE_2D);
 	glDisable(GL_BLEND);
 	renderer.isBlending = 0;
-	
+
+    glClearDepth(1.0f);
+    glDepthFunc(GL_LESS);
 	glEnable(GL_DEPTH_TEST);
-	
+
 	glEnableClientState (GL_NORMAL_ARRAY);
-	glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHTING);
 	glShadeModel(GL_SMOOTH);
 	
 	//glCullFace(GL_FRONT);
@@ -108,7 +110,7 @@ void Set3DF(void)
 
 void StopRenditionF(void)
 {
-    printf("[StopRenditionF] Swapping framebuffers\n");
+    //printf("[StopRenditionF] Swapping framebuffers\n");
 	glKosSwapBuffers();
 }
 
@@ -275,7 +277,7 @@ void RenderNormalsF(md5_mesh_t* currentMesh)
 
 void RenderEntitiesMD5F(void* md5Void)
 {
-    printf("[RenderEntitiesMD5F] Rendering all MD5 models\n");
+    //printf("[RenderEntitiesMD5F] Rendering all MD5 models\n");
 	
 	md5_object_t* md5Object;
 	md5_mesh_t* currentMesh;
@@ -291,11 +293,12 @@ void RenderEntitiesMD5F(void* md5Void)
 	for (i = 0; i < 1/*md5Object.md5Model.num_meshes*/; i++)
     {
 		currentMesh = &md5Object->md5Model.meshes[i];
-        printf("[RenderEntitiesMD5F] Rendering mesh: 0x%08x\n", currentMesh);
+        //printf("[RenderEntitiesMD5F] Rendering mesh: 0x%08x\n", currentMesh);
 				
 		//RenderNormalsF( currentMesh);
 		
 		glNormalPointer(GL_INT, sizeof(vertex_t), currentMesh->vertexArray[0].normal);
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex_t), currentMesh->vertexArray[0].col);
 		glTexCoordPointer (2, GL_SHORT, sizeof(vertex_t), currentMesh->vertexArray[0].text);	
 		glVertexPointer (3, GL_FLOAT, sizeof(vertex_t), currentMesh->vertexArray[0].pos);	
 		glDrawElements (GL_TRIANGLES, currentMesh->num_tris * 3, GL_UNSIGNED_SHORT, currentMesh->vertexIndices);
@@ -314,7 +317,8 @@ void RenderEntitiesOBJF(void* objVoid)
 	
 	//RenderNormalsOBJF( obj);
 	
-	glNormalPointer(GL_SHORT, sizeof(obj_vertex_t), obj->vertices[0].normal);
+	glNormalPointer(GL_INT, sizeof(obj_vertex_t), obj->vertices[0].normal);
+    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex_t), obj->vertices[0].col);
 	glTexCoordPointer (2, GL_FLOAT, sizeof(obj_vertex_t), obj->vertices[0].textCoo);	
 	glVertexPointer (3, GL_FLOAT, sizeof(obj_vertex_t), obj->vertices[0].position);	
 	glDrawElements (GL_TRIANGLES, obj->num_indices, GL_UNSIGNED_SHORT, obj->indices);
@@ -328,28 +332,29 @@ void RenderEntitiesF(void)
 	int i;
 	entity_t* entity;
 	
-	printf("[RenderEntitiesF] Begin rendering entities\n");
+	//printf("[RenderEntitiesF] Begin rendering entities\n");
 	
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 
-    printf("[RenderEntitiesF] Loaded texture matrix\n");
+    //printf("[RenderEntitiesF] Loaded texture matrix\n");
 
 	glMatrixMode(GL_MODELVIEW);
-	
-	glMatrixMode(GL_PROJECTION);
-	gluPerspective(camera.fov, camera.aspect, camera.zNear, camera.zFar);
 
-    printf("[RenderEntitiesF] Loaded projection matrix\n");
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(camera.fov, camera.aspect, camera.zNear, camera.zFar);
+
+    //printf("[RenderEntitiesF] Loaded projection matrix\n");
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-    printf("[RenderEntitiesF] Loaded modelview matrix\n");
+    //printf("[RenderEntitiesF] Loaded modelview matrix\n");
 
 	
 	SetupCameraF();
-	SetupLightingF();
+	//SetupLightingF();
 	
 	for(i=0; i < num_map_entities; i++)
 	{
@@ -395,11 +400,12 @@ void RenderStringF(svertex_t* vertices,ushort* indices, uint numIndices)
 {
 	
 
-	glVertexPointer (2, GL_SHORT, sizeof(svertex_t), vertices);	
+	glVertexPointer (3, GL_FLOAT, sizeof(svertex_t), vertices);
+    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(svertex_t), vertices->col);
 	glTexCoordPointer (2, GL_FLOAT,sizeof(svertex_t), vertices->text);	
 	
 	//glDrawArrays(GL_TRIANGLES, 0, numVertices);
-	glDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT,indices);
+	glDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, indices);
 	STATS_AddTriangles(numIndices/3);
 	
 	
@@ -449,8 +455,8 @@ void initFixedRenderer(renderer_t* renderer)
 	
 	
 	
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
+	//glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHT0);
 	glDisable(GL_ALPHA_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -468,12 +474,10 @@ void initFixedRenderer(renderer_t* renderer)
 	
 	//glEnable(GL_LIGHTING);
 	
-	glClearColor(0.5f, 0.5f, 0.5f,1.0f);
+	glClearColor(0.2f, 0.2f, 0.2f,1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f,1.0f);
 	
 	glEnable ( GL_COLOR_MATERIAL ) ;
-	
-
 	
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR)

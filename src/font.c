@@ -15,7 +15,7 @@ void FM_Init( void )
 {
 	
 			
-	FM_createFont("data/font/font1.pvr");
+	FM_createFont("data/font/font1.png.argb4444.pvr");
 	
 	
 	font.nSize = 2;
@@ -156,6 +156,11 @@ int WriteVertices( int x, int y, char num, svertex_t* vertices )
 	vertices->text[1] = frow+font.hFrac; 
 	vertices->pos[0] = x;
 	vertices->pos[1] = y;
+    vertices->pos[2] = 10.0f;
+    vertices->col[0] = 255;
+    vertices->col[1] = 255;
+    vertices->col[2] = 255;
+    vertices->col[3] = 255;
 	vertices++;
 		
 	//2
@@ -163,6 +168,11 @@ int WriteVertices( int x, int y, char num, svertex_t* vertices )
 	vertices->text[1] = frow+font.hFrac;		
 	vertices->pos[0] = x+font.nMaxWidth*scale ;
 	vertices->pos[1] = y;
+    vertices->pos[2] = 10.0f;
+    vertices->col[0] = 255;
+    vertices->col[1] = 255;
+    vertices->col[2] = 255;
+    vertices->col[3] = 255;
 	vertices++;
 	
 	//3
@@ -170,6 +180,11 @@ int WriteVertices( int x, int y, char num, svertex_t* vertices )
 	vertices->text[1] = frow;		
 	vertices->pos[0] = x+font.nMaxWidth*scale ;
 	vertices->pos[1] = y+sh*scale;
+    vertices->pos[2] = 10.0f;
+    vertices->col[0] = 255;
+    vertices->col[1] = 255;
+    vertices->col[2] = 255;
+    vertices->col[3] = 255;
 	vertices++;
 
 	 
@@ -178,6 +193,11 @@ int WriteVertices( int x, int y, char num, svertex_t* vertices )
 	vertices->text[1] = frow;		
 	vertices->pos[0] = x;
 	vertices->pos[1] = y+sh*scale;
+    vertices->pos[2] = 10.0f;
+    vertices->col[0] = 255;
+    vertices->col[1] = 255;
+    vertices->col[2] = 255;
+    vertices->col[3] = 255;
 	vertices++;
 	
 

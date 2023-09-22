@@ -19,7 +19,8 @@
 typedef struct obj_vertex_t
 {
 	vec3_t position;
-	vec3short_t normal;
+	vec3int_t normal;
+    vec4uchar_t col;
 	vec3short_t tangent;
 	vec2_t textCoo;
 } obj_vertex_t;

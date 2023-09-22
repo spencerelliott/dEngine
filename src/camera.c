@@ -27,8 +27,8 @@ void CAM_Init()
 	vec3_t pos ;
 	
 	pos[0] = 40;
-	pos[1] = 80;
-	pos[2] = -40;
+	pos[1] = 40;
+	pos[2] = -200;
 	
 
 	
@@ -46,7 +46,7 @@ void CAM_Init()
 void CAM_GenerateVectors(matrix3x3_t orientationMatrix)
 {
 	vec3_t right = {0,-1,0};	
-	vec3_t up = {1,0,0};
+	vec3_t up = {0,1,0};
 	vec3_t forward = {0,0,1};
 	
 	//vec3_t right = {1,0,0};	
