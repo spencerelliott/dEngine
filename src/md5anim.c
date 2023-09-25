@@ -11,6 +11,7 @@
 #include "internal_math.h"
 #include "quaternion.h"
 #include "md5model.h"
+#include "sh4_math.h"
 
 /* Joint info */
 typedef struct joint_info_t
@@ -34,7 +35,11 @@ typedef struct baseframe_joint_t
 
 float Quat_dotProduct (const quat4_t qa, const quat4_t qb)
 {
+#if DE_USE_FAST_MATH
+    return MATH_fipr(qa[0], qa[1], qa[2], qa[3], qb[0], qb[1], qb[2], qb[3]);
+#else
 	return ((qa[X] * qb[X]) + (qa[Y] * qb[Y]) + (qa[Z] * qb[Z]) + (qa[W] * qb[W]));
+#endif
 }
 
 void Quat_slerp (const quat4_t qa, const quat4_t qb, float t, quat4_t out)

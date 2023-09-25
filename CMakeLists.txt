@@ -35,6 +35,7 @@ ENDIF()
 
 set(
     SOURCES
+        src/sh4_math.h
         src/ItextureLoader.h
         src/camera.h
         src/commands.h

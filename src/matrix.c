@@ -8,6 +8,7 @@
 
 #include "matrix.h"
 #include "stdio.h"
+#include "sh4_math.h"
 
 /*
 	Matrices here are colmn major
