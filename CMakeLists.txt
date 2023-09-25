@@ -108,7 +108,7 @@ if(PLATFORM_DREAMCAST)
     #    src/dc/snd_dc.c
     #)
 
-    add_compile_options(-g)
+    add_compile_options(-g -ffast-math -mfsrra -O3)
     add_link_options("-Wl,-Map=output.map")
 
     if(EXISTS ${ROMDISK_DIR})

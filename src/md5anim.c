@@ -94,7 +94,7 @@ void Quat_slerp (const quat4_t qa, const quat4_t qb, float t, quat4_t out)
     {
 		/* Compute the sin of the angle using the
 		 trig identity sin^2(omega) + cos^2(omega) = 1 */
-		float sinOmega = sqrt (1.0f - (cosOmega * cosOmega));
+		float sinOmega = MATH_Fast_Sqrt(1.0f - (cosOmega * cosOmega));
 		
 		/* Compute the angle from its sin and cosine */
 		float omega = atan2 (sinOmega, cosOmega);

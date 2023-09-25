@@ -20,8 +20,8 @@ KOS_INIT_ROMDISK(romdisk);
 int main(int argc, char** argv) {
     glKosInit();
 
-    //setenv("CWD", "/cd", 1);
-    setenv("CWD", "/pc", 1);
+    setenv("CWD", "/cd", 1);
+    //setenv("CWD", "/pc", 1);
 
     //renderer.statsEnabled = 1;
 
@@ -32,20 +32,20 @@ int main(int argc, char** argv) {
 
     profiler_init("/pc/dEngine_prof.out");
     profiler_start();
-    while (count < 10) {
+    while (count < 30) {
 #else
     while(1) {
+#endif
         dEngine_HostFrame();
 
         pvr_stats_t stats;
         pvr_get_stats(&stats);
 
-        printf("FPS: %f\n", stats.frame_rate);
+        //printf("FPS: %f\n", stats.frame_rate);
     #if DO_PROFILING
         count++;
     #endif
     }
-#endif
     profiler_stop();
 
     return 0;

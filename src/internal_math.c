@@ -30,7 +30,7 @@ void normalize(vec3_t v)
 #else
 	float length, ilength;
 	
-	length = (float)sqrt( v[ 0 ] * v[ 0 ] + v[ 1 ] * v[ 1 ] + v[ 2 ] * v[ 2 ] );
+	length = (float)MATH_Fast_Sqrt( v[ 0 ] * v[ 0 ] + v[ 1 ] * v[ 1 ] + v[ 2 ] * v[ 2 ] );
 	
 //	printf("Length = %.3f\n",length);
 	

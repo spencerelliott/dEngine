@@ -21,7 +21,7 @@ void Quat_computeW (quat4_t q)
 	if (t < 0.0f)
 		q[W] = 0.0f;
 	else
-		q[W] = -sqrt (t);
+		q[W] = -MATH_Fast_Sqrt(t);
 }
 
 void Quat_normalize (quat4_t q)
@@ -30,7 +30,7 @@ void Quat_normalize (quat4_t q)
 #if DE_USE_FAST_MATH
     float mag = MATH_Sum_of_Squares(q[W], q[X], q[Y], q[Z]);
 #else
-    float mag = sqrt ((q[X] * q[X]) + (q[Y] * q[Y])
+    float mag = MATH_Fast_Sqrt((q[X] * q[X]) + (q[Y] * q[Y])
 					  + (q[Z] * q[Z]) + (q[W] * q[W]));
 #endif
 	
@@ -131,11 +131,7 @@ void Quat_CreateFromMat3x3(const matrix3x3_t matrix,quat4_t out)
 	
 	if (trace > 0)
 	{
-#if DE_USE_FAST_MATH
 		s =  MATH_fsrra(trace) * 0.5f;
-#else
-        s =  1.0f / (2 * sqrt(trace)) ;
-#endif
 		out[0] = ( matrix[7] - matrix[5] ) * s;
 		out[1] = ( matrix[2] - matrix[6] ) * s;
 		out[2] = ( matrix[3] - matrix[1] ) * s;
@@ -144,11 +140,7 @@ void Quat_CreateFromMat3x3(const matrix3x3_t matrix,quat4_t out)
 	}
 	else if ( matrix[0] > matrix[4] && matrix[0] > matrix[8] ) 
 	{	// Column 0:
-#if DE_USE_FAST_MATH
         s = MATH_fsrra(1.0f + matrix[0] - matrix[4] - matrix[8]) * 0.5f;
-#else
-		s  = 1.0f / (sqrt( 1.0 + matrix[0] - matrix[4] - matrix[8] ) * 2);
-#endif
 		out[0] = s * 4;
 		out[1] = (matrix[1] + matrix[3] ) * s;
 		out[2] = (matrix[2] + matrix[6] ) * s;
@@ -156,11 +148,7 @@ void Quat_CreateFromMat3x3(const matrix3x3_t matrix,quat4_t out)
 	} 
 	else if ( matrix[4] > matrix[8] ) 
 	{	// Column 1:
-#if DE_USE_FAST_MATH
         s = MATH_fsrra(1.0f + matrix[4] - matrix[0] - matrix[8]) * 0.5f;
-#else
-		s  = 1.0f / (sqrt( 1.0 + matrix[4] - matrix[0] - matrix[8] ) * 2);
-#endif
 		out[0] = (matrix[1] + matrix[3] ) * s;
 		out[1] =  s * 4;
 		out[2] = (matrix[5] + matrix[7] ) * s;
@@ -168,11 +156,7 @@ void Quat_CreateFromMat3x3(const matrix3x3_t matrix,quat4_t out)
 	} 
 	else 
 	{	// Column 2:
-#if DE_USE_FAST_MATH
         s = MATH_fsrra(1.0 + matrix[8] - matrix[0] - matrix[4]) * 0.5f;
-#else
-		s  = 1.0 / (sqrt( 1.0 + matrix[8] - matrix[0] - matrix[4] ) * 2);
-#endif
 		out[0] = (matrix[2] + matrix[6] ) * s;
 		out[1] = (matrix[5] + matrix[7] ) * s;
 		out[2] =  s * 4;
