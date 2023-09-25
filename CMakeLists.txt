@@ -59,6 +59,7 @@ set(
         src/texture.h
         src/timer.h
         src/world.h
+        src/profiler.h
 
         src/ItextureLoader.c
         src/camera.c
@@ -85,6 +86,7 @@ set(
         src/texture.c
         src/timer.c
         src/world.c
+        src/profiler.c
 
         src/main.c
 )

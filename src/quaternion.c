@@ -53,10 +53,17 @@ void Quat_normalize (quat4_t q)
 
 void Quat_multQuat (const quat4_t qa, const quat4_t qb, quat4_t out)
 {
+#if DE_USE_FAST_MATH
+    out[W] = MATH_fipr(qa[W], -qa[X], -qa[Y], -qa[Z], qb[W], qb[X], qb[Y], qb[Z]);
+    out[X] = MATH_fipr(qa[X], qa[W], qa[Y], -qa[Z], qb[W], qb[X], qb[Z], qb[Y]);
+    out[Y] = MATH_fipr(qa[Y], qa[W], qa[Z], -qa[X], qb[W], qb[Y], qb[X], qb[Z]);
+    out[Z] = MATH_fipr(qa[Z], qa[W], qa[X], -qa[Y], qb[W], qb[Z], qb[Y], qb[X]);
+#else
 	out[W] = (qa[W] * qb[W]) - (qa[X] * qb[X]) - (qa[Y] * qb[Y]) - (qa[Z] * qb[Z]);
 	out[X] = (qa[X] * qb[W]) + (qa[W] * qb[X]) + (qa[Y] * qb[Z]) - (qa[Z] * qb[Y]);
 	out[Y] = (qa[Y] * qb[W]) + (qa[W] * qb[Y]) + (qa[Z] * qb[X]) - (qa[X] * qb[Z]);
 	out[Z] = (qa[Z] * qb[W]) + (qa[W] * qb[Z]) + (qa[X] * qb[Y]) - (qa[Y] * qb[X]);
+#endif
 }
 
 void Quat_multVec (const quat4_t q, const vec3_t v, quat4_t out)

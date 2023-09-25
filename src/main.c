@@ -8,6 +8,7 @@
 #include <dEngine.h>
 #include "renderer.h"
 #include "world.h"
+#include "profiler.h"
 
 KOS_INIT_FLAGS(INIT_DEFAULT);
 
@@ -17,15 +18,27 @@ KOS_INIT_ROMDISK(romdisk);
 int main(int argc, char** argv) {
     glKosInit();
 
-    setenv("CWD", "/cd", 1);
+    //setenv("CWD", "/cd", 1);
+    setenv("CWD", "/pc", 1);
 
     //renderer.statsEnabled = 1;
 
     dEngine_Init(GL_11_RENDERER, 640, 480);
 
-    while (1) {
+    uint32 count = 0;
+
+    profiler_init("/pc/dEngine_prof.out");
+    profiler_start();
+    while (count < 10) {
         dEngine_HostFrame();
+
+        pvr_stats_t stats;
+        pvr_get_stats(&stats);
+
+        printf("FPS: %f\n", stats.frame_rate);
+        count++;
     }
+    profiler_stop();
 
     return 0;
 }

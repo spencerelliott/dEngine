@@ -308,11 +308,13 @@ void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
 {
     //printf("[GenerateGPUVertices] Generating vertices for frame: Mesh = 0x%08x; num verts = %d\n", mesh, mesh->num_verts);
 	int i, j;
-    float maxZ = 0.0f, minZ = 99999.9f;
 	const md5_weight_t *weight;
 	const md5_joint_t *joint ;
-	vec3_t tmpNormal,tmpVertex;
+    vec3_t tmpVertex;
+    #if NORMAL_ENABLED
+	vec3_t tmpNormal;
 	vec3_t normalAccumulator;
+    #endif
 	#ifdef TANGENT_ENABLED
 	vec3_t tmpTangent;
 	vec3_t tangentAccumulator;
@@ -324,9 +326,12 @@ void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
     {
         //printf("[GenerateGPUVertices] Calculating vertex %d\n", i);
 		vectorClear(currentVertex->pos);
+
+        #if NORMAL_ENABLED
 		vectorClear(normalAccumulator);
+        #endif
 		
-		#ifdef TANGENT_ENABLED
+		#if TANGENT_ENABLED
 		vectorClear(tangentAccumulator);
 		#endif
 		
@@ -343,10 +348,12 @@ void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
 			currentVertex->pos[2] += ((joint->pos[2] + tmpVertex[2]) * weight->bias);
 			
 			// Same thing for normal
+            #if NORMAL_ENABLED
 			Quat_rotateShortPoint (joint->orient, weight->normal, tmpNormal);
 			vectorAdd(normalAccumulator,tmpNormal,normalAccumulator);
+            #endif
 			
-			#ifdef TANGENT_ENABLED
+			#if TANGENT_ENABLED
 			Quat_rotateShortPoint (joint->orient, weight->tangent, tmpTangent);
 			vectorAdd(tangentAccumulator,tmpTangent,tangentAccumulator);
 			#endif
@@ -357,29 +364,19 @@ void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
         currentVertex->col[2] = 255;
         currentVertex->col[3] = 255;
 
+        #if NORMAL_ENABLED
 		//Need to normalize normal
 		normalize(normalAccumulator);
 		vectorScale(normalAccumulator,32767,currentVertex->normal);
+        #endif
 		
-		#ifdef TANGENT_ENABLED
+		#if TANGENT_ENABLED
 		normalize(tangentAccumulator);
 		vectorScale(tangentAccumulator,32767,currentVertex->tangent);
         #endif
-
-        if (currentVertex->pos[2] < minZ) {
-            minZ = currentVertex->pos[2];
-        }
-
-        if (currentVertex->pos[2] > maxZ) {
-            maxZ = currentVertex->pos[2];
-        }
 		
 		currentVertex++;
     }
-
-//    if (mesh->num_verts > 0) {
-//        printf("[GenerateGPUVertices] Max Z: %f, Min Z: %f\n", maxZ, minZ);
-//    }
 }
 
 void GenerateLightingInfo (const md5_mesh_t *mesh, md5_joint_t *skeleton)

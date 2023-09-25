@@ -29,6 +29,6 @@ enum {	X, Y, Z, W };
 #define DE_USHRT_MAX 65535
 #define DE_SHRT_MAX 32767
 
-#define DE_USE_FAST_MATH 1
+#define DE_USE_FAST_MATH 0
 
 #endif

@@ -18,6 +18,7 @@
 		#define TANGENT_ENABLED 1
 	#else
 		#define TANGENT_ENABLED 0
+        #define NORMAL_ENABLED 0
 	#endif
 #endif
 

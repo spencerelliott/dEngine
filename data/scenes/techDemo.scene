@@ -1,6 +1,6 @@
 map	
 {
-	filename: data/map/demo.map
+	filename: data/map/demoNoScene.map
 }
 
 light
