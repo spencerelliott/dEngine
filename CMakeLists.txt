@@ -1,12 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(dEngine C)
 
-# Enable ExternalProject CMake module
-include(ExternalProject)
-
-# Set default ExternalProject root directory
-set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/Rust)
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(GENROMFS "$ENV{KOS_BASE}/utils/genromfs/genromfs")
 set(VQENC $ENV{KOS_BASE}/utils/vqenc/vqenc)
@@ -91,33 +85,26 @@ set(
         src/main.c
 )
 
+# Determine whether we are building Debug or Release
+string(TOLOWER ${CMAKE_BUILD_TYPE} CONFIGURATION)
+
 include_directories(GLdc/include)
-link_directories(GLdc/lib)
+link_directories(GLdc/lib/${CONFIGURATION})
 
 if(ENGINE_DEBUG)
     add_definitions(-DENGINE_DEBUG)
 endif()
 
 if(PLATFORM_DREAMCAST)
-    #set(SOURCES
-    #    ${SOURCES}
-    #    src/dc/os_dc.c
-    #    src/dc/txr_dc.c
-    #    src/dc/gfx_dc.c
-    #    src/dc/inp_dc.c
-    #    src/dc/snd_dc.c
-    #)
+    add_compile_options(-ffast-math -mfsrra)
 
-    add_compile_options(-g -ffast-math -mfsrra -O3)
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -fexpensive-optimizations -fomit-frame-pointer -finline-functions")
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O3 -fexpensive-optimizations -fomit-frame-pointer -finline-functions")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g -Wall -Wextra")
+
     add_link_options("-Wl,-Map=output.map")
 
     if(EXISTS ${ROMDISK_DIR})
-#        message("Generating assets so something is available for the romdisk...")
-#        execute_process(
-#                COMMAND bash -c "./make_assets.sh dc"
-#                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-#        )
-
         if(EXISTS ${ASSETS_DIR})
             message("Setting up romdisk generation...")
             add_custom_command(
@@ -137,12 +124,8 @@ if(PLATFORM_DREAMCAST)
         endif()
     endif()
 
-    link_directories(rust/game-code/target/debug/)
-
     add_definitions(-DDREAMCAST)
 
-    link_libraries(kmg)
-    link_libraries(kosutils)
     link_libraries(GLdc)
 else()
 
@@ -154,38 +137,15 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-#configure_file(GL/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 link_libraries(m)
 
 if(PLATFORM_DREAMCAST)
     add_executable(dEngine ${EXTRA_OBJS} ${SOURCES})
 else()
-    set(SOURCES
-            ${SOURCES}
-            src/pc/os_pc.c
-            src/pc/txr_pc.c
-    )
-
-    link_directories(rust/game-code/target/debug/)
-    link_libraries(game_code)
-
     add_definitions(-g)
     if(WIN32)
         add_executable(dEngine.exe ${EXTRA_OBJS} ${SOURCES})
     else()
-        add_executable(tile-engine ${EXTRA_OBJS} ${SOURCES})
-
-        # Add rust_code as a CMake target
-        ExternalProject_Add(
-                rust_code
-                DOWNLOAD_COMMAND ""
-                CONFIGURE_COMMAND ""
-                BUILD_COMMAND cargo build COMMAND cargo build --release
-                BINARY_DIR "${CMAKE_SOURCE_DIR}/rust/game-code"
-                INSTALL_COMMAND ""
-                LOG_BUILD ON
-                BUILD_ALWAYS TRUE)
-
-        add_dependencies(tile-engine rust_code)
+        add_executable(dEngine ${EXTRA_OBJS} ${SOURCES})
     endif()
 endif()

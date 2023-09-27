@@ -29,9 +29,12 @@ typedef struct vertex_cache_entry_t
 vertex_cache_entry_t* vertex_cache;
 ushort verticesCacheCreated;
 
+static obj_vertex_t OBJ_VERTBUFFER[OBJ_MAX_CACHE_SIZE] = {0};
+static ushort OBJ_INDBUFFER[OBJ_MAX_CACHE_SIZE] = {0};
+
 void OBJ_InitVerticeCache()
 {
-	vertex_cache = (vertex_cache_entry_t*)calloc(DE_USHRT_MAX, sizeof(vertex_cache_entry_t));
+	vertex_cache = (vertex_cache_entry_t*)calloc(OBJ_MAX_CACHE_SIZE, sizeof(vertex_cache_entry_t));
 	verticesCacheCreated=0;
 }
 
@@ -147,23 +150,18 @@ void OBJ_GenerateLightingInfo(obj_t* obj)
 
 char OBJ_Load(char* filename,entity_t* entity)
 {
-	static vec3_t tmpVertices[DE_USHRT_MAX];
+    printf("[OBJ_Load] About to load model\n");
+	static vec3_t tmpVertices[OBJ_MAX_CACHE_SIZE];
 	ushort num_vertices=0;
-	
-	static vec2_t tmpTextureCoor[DE_USHRT_MAX];
+	static vec2_t tmpTextureCoor[OBJ_MAX_CACHE_SIZE];
 	ushort num_textuCoor=0;
 	
 	int idata[9];	
 	int i;
 	
 	ushort indiceOfCurrentVertex;
-	
 	filehandle_t* objFile ;
-	
 	obj_t* obj;
-	
-	
-	
 	
 	objFile = FS_OpenFile(filename, "rt");
 	
@@ -172,19 +170,21 @@ char OBJ_Load(char* filename,entity_t* entity)
 		printf("Could not Load OBJ: '%s'.\n",filename);
 		return 0;
 	}
-	
-	
-		
+
+    printf("[OBJ_Load] Initializing vertex cache\n");
 	OBJ_InitVerticeCache();
+
+    // Clear vertex and indicies buffer
+    memset(OBJ_VERTBUFFER, 0, OBJ_MAX_CACHE_SIZE * sizeof(obj_vertex_t));
+    memset(OBJ_INDBUFFER, 0, OBJ_MAX_CACHE_SIZE * sizeof(ushort));
 	
 	obj = (obj_t*)entity->model;
-	obj->vertices = (obj_vertex_t*)calloc(DE_USHRT_MAX, sizeof(obj_vertex_t));
 	obj->num_vertices = 0;
-	obj->indices = (ushort*)calloc(DE_USHRT_MAX, sizeof(ushort));
 	obj->num_indices = 0;
 	
 	LE_pushLexer();
-	
+
+    printf("[OBJ_Load] Initialize lexer\n");
 	LE_init(objFile);
 	
 	while (LE_hasMoreData()) 
@@ -228,24 +228,18 @@ char OBJ_Load(char* filename,entity_t* entity)
 			#ifdef OBJ_FACE_CCW
 			for(i=0;i<3;i++)//OBJ Standard: Couter-clockwise
 			#else
-			for(i=2;i>=0;i--) //Bugged expoter.
+			for(i = 2; i >= 0; i--) //Bugged expoter.
 			#endif			
 			{
 				indiceOfCurrentVertex = GetCacheVertex(idata[3*i],tmpTextureCoor[idata[3*i+1]]);
-				//indiceOfCurrentVertex = obj->num_indices;
 				
 				if (indiceOfCurrentVertex+1 > obj->num_vertices)
 					obj->num_vertices = indiceOfCurrentVertex+1;
 				
-				vectorCopy (tmpVertices[idata[3*i]]		, obj->vertices[indiceOfCurrentVertex].position);
-				//for(i=0;i<3;i++)
-				//{
-				//		printf("Vertices: %d, %d, %d.\n",obj->vertices[indiceOfCurrentVertex].position[0],obj->vertices[indiceOfCurrentVertex].position[1],obj->vertices[indiceOfCurrentVertex].position[2]);
-				//}
-				vector2Copy(tmpTextureCoor[idata[3*i+1]], obj->vertices[indiceOfCurrentVertex].textCoo);
-				
-				//printf("num_indices = %d, indice pointer=%d\n",obj->num_indices,indiceOfCurrentVertex);
-				obj->indices[obj->num_indices++] = indiceOfCurrentVertex ;
+				vectorCopy (tmpVertices[idata[3*i]]		, OBJ_VERTBUFFER[indiceOfCurrentVertex].position);
+				vector2Copy(tmpTextureCoor[idata[3*i+1]], OBJ_VERTBUFFER[indiceOfCurrentVertex].textCoo);
+
+				OBJ_INDBUFFER[obj->num_indices++] = indiceOfCurrentVertex ;
 				
 			}
 			
@@ -261,23 +255,21 @@ char OBJ_Load(char* filename,entity_t* entity)
 			
 		}
 	}
-	
-	
+
 	LE_popLexer();
 	
 	FS_CloseFile(objFile);
-	
-	//Adjust size of vertices and indices
-	obj->vertices = realloc(obj->vertices,obj->num_vertices  * sizeof(obj_vertex_t));
-	obj->indices  = realloc(obj->indices ,obj->num_indices   * sizeof(ushort));
-	
-	//printf("Obj %s has %d vertices.\n",filename,obj->num_vertices);
-	//printf("Obj %s has %d indices.\n",filename,obj->num_indices);
+
+    obj->vertices = (obj_vertex_t*)calloc(obj->num_vertices, sizeof(obj_vertex_t));
+    obj->indices = (ushort*)calloc(obj->num_indices, sizeof(ushort));
+
+    memcpy(obj->vertices, OBJ_VERTBUFFER, obj->num_vertices * sizeof(obj_vertex_t));
+    memcpy(obj->indices, OBJ_INDBUFFER, obj->num_indices * sizeof(ushort));
 	
 	OBJ_DestroyVerticeCache();
 	
 	//Generate lighting infos.
-	OBJ_GenerateLightingInfo(obj);
+	//OBJ_GenerateLightingInfo(obj);
 	
 	return 1;
 }

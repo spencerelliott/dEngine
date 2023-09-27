@@ -93,11 +93,10 @@ void loadNativePVRT(texture_t* texture)
     texture->width = pvrHeader->width;
     texture->height = pvrHeader->height;
 
-    GLboolean twiddled = (pvrHeader->type & (1 << 25)) < 1;
-    GLboolean compressed = (pvrHeader->type & (1 << 29)) > 0;
-    GLboolean mipmapped = (pvrHeader->type & (1 << 30)) > 0;
-    GLboolean strided = (pvrHeader->type & (1 << 24)) > 0;
-
+    GLboolean twiddled = (pvrHeader->type & (1 << 26)) < 1;
+    GLboolean compressed = (pvrHeader->type & (1 << 30)) > 0;
+    GLboolean mipmapped = (pvrHeader->type & (1 << 31)) > 0;
+    GLboolean strided = (pvrHeader->type & (1 << 25)) > 0;
 
     flags = pvrHeader->type;
 	formatFlags = (pvrHeader->type >> 27) & 0b111;
@@ -146,5 +145,7 @@ void loadNativePVRT(texture_t* texture)
     texture->format = (formatFlags == 1) ? GL_RGB : GL_BGRA;
     texture->internal_format = (formatFlags == 1) ? GL_RGB : GL_RGBA;
     texture->type = lookup[(compressed << 2) | (twiddled << 1) | mipmapped];
-    texture->dataLength = pvrHeader->size * pvrHeader->size * bpp;
+    texture->compressed = compressed;
+    FS_FileSeek(texture->file, 0, SEEK_SET);
+    texture->dataLength = FS_GetFileSize(texture->file) - sizeof(DTEXTexHeader);
 }

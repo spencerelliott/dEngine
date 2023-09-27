@@ -44,5 +44,5 @@ do
   echo "Converting ${f} (${FILE_NAME}) to PVR in ${DIR_PATH}..."
 
   # Convert and output the textures (enable compression later)
-  $KOS_BASE/utils/texconv/texconv -f ARGB4444 -i "${f}" -o "${DIR_PATH}/${BASE_NAME}.argb4444.pvr"
+  $KOS_BASE/utils/texconv/texconv -c -f ARGB4444 -i "${f}" -o "${DIR_PATH}/${BASE_NAME}.argb4444.pvr"
 done

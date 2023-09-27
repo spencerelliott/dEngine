@@ -13,6 +13,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glkos.h>
+#include <GL/glext.h>
 #include "stats.h"
 #include "world.h"
 #include "obj.h"
@@ -103,7 +104,11 @@ void UpLoadTextureToGPUF(texture_t* texture)
 
     printf("[UpLoadTextureToGPUF] Texture size : %dx%d\n", texture->width, texture->height);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, texture->internal_format, texture->width, texture->height, 0, texture->format, texture->type, texture->data);
+    if (texture->compressed) {
+        glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, texture->type, texture->width, texture->height, 0, texture->dataLength, texture->data);
+    } else {
+        glTexImage2D(GL_TEXTURE_2D, 0, texture->internal_format, texture->width, texture->height, 0, texture->format, texture->type, texture->data);
+    }
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, DE_DEFAULT_FILTERING);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, DE_DEFAULT_FILTERING);
 	

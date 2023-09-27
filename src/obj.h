@@ -16,6 +16,8 @@
 #include "material.h"
 #include "entities.h"
 
+#define OBJ_MAX_CACHE_SIZE 2000
+
 typedef struct obj_vertex_t
 {
 	vec3_t position;

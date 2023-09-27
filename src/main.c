@@ -27,6 +27,13 @@ int main(int argc, char** argv) {
 
     dEngine_Init(GL_11_RENDERER, 640, 480);
 
+    struct mallinfo malloc_info = mallinfo();
+    printf("Memory stats after initializing:\n");
+    printf("\tMax system = %10lu bytes\n", (unsigned long)malloc_info.usmblks);
+    printf("\tSystem     = %10lu bytes\n", (unsigned long)(malloc_info.arena + malloc_info.hblkhd));
+    printf("\tIn use     = %10lu bytes\n", (unsigned long)(malloc_info.uordblks + malloc_info.hblkhd));
+    printf("\tAvailable  = %10lu bytes\n", (unsigned long)(malloc_info.arena + malloc_info.hblkhd) - (unsigned long)(malloc_info.uordblks + malloc_info.hblkhd));
+
 #if DO_PROFILING
     uint32 count = 0;
 
