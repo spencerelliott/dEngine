@@ -239,7 +239,7 @@ int ReadMD5Model (const char *filename, entity_t* entity )//md5_model_t *mdl)
 	{
 		mesh = &mdl->meshes[i];
 		
-		mesh->vertexArray = malloc (sizeof (vertex_t) * mesh->num_verts);
+		mesh->vertexArray = malloc (sizeof (vertex_t) * mesh->num_verts * 2);
 		mesh->vertexIndices = malloc (sizeof (ushort) * mesh->num_tris * 3);
 		
 		
@@ -349,8 +349,8 @@ void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
 			
 			// Same thing for normal
             #if NORMAL_ENABLED
-			Quat_rotateShortPoint (joint->orient, weight->normal, tmpNormal);
-			vectorAdd(normalAccumulator,tmpNormal,normalAccumulator);
+			Quat_rotatePoint (joint->orient, weight->normal, tmpNormal);
+			vectorAdd(normalAccumulator, tmpNormal, normalAccumulator);
             #endif
 			
 			#if TANGENT_ENABLED
@@ -367,7 +367,6 @@ void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
         #if NORMAL_ENABLED
 		//Need to normalize normal
 		normalize(normalAccumulator);
-		vectorScale(normalAccumulator,32767,currentVertex->normal);
         #endif
 		
 		#if TANGENT_ENABLED

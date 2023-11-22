@@ -156,7 +156,7 @@ int WriteVertices( int x, int y, char num, svertex_t* vertices )
 	vertices->text[1] = frow+font.hFrac; 
 	vertices->pos[0] = x;
 	vertices->pos[1] = y;
-    vertices->pos[2] = 10.0f;
+    vertices->pos[2] = 0.0f;
     vertices->col[0] = 255;
     vertices->col[1] = 255;
     vertices->col[2] = 255;
@@ -168,7 +168,7 @@ int WriteVertices( int x, int y, char num, svertex_t* vertices )
 	vertices->text[1] = frow+font.hFrac;		
 	vertices->pos[0] = x+font.nMaxWidth*scale ;
 	vertices->pos[1] = y;
-    vertices->pos[2] = 10.0f;
+    vertices->pos[2] = 0.0f;
     vertices->col[0] = 255;
     vertices->col[1] = 255;
     vertices->col[2] = 255;
@@ -180,7 +180,7 @@ int WriteVertices( int x, int y, char num, svertex_t* vertices )
 	vertices->text[1] = frow;		
 	vertices->pos[0] = x+font.nMaxWidth*scale ;
 	vertices->pos[1] = y+sh*scale;
-    vertices->pos[2] = 10.0f;
+    vertices->pos[2] = 0.0f;
     vertices->col[0] = 255;
     vertices->col[1] = 255;
     vertices->col[2] = 255;
@@ -193,7 +193,7 @@ int WriteVertices( int x, int y, char num, svertex_t* vertices )
 	vertices->text[1] = frow;		
 	vertices->pos[0] = x;
 	vertices->pos[1] = y+sh*scale;
-    vertices->pos[2] = 10.0f;
+    vertices->pos[2] = 0.0f;
     vertices->col[0] = 255;
     vertices->col[1] = 255;
     vertices->col[2] = 255;
