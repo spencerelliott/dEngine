@@ -52,7 +52,7 @@ typedef struct md5_weight_t
 	
 	vec3_t pos;
 	
-	vec3short_t normal;
+	vec3_t normal;
 	
 	// Only 3GS and shader capable need tangent for bumpMapping
 	#ifdef TANGENT_ENABLED
