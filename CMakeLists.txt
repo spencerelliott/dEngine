@@ -30,6 +30,7 @@ ENDIF()
 set(
     SOURCES
         src/sh4_math.h
+        src/devtools.h
         src/ItextureLoader.h
         src/camera.h
         src/commands.h
@@ -55,6 +56,7 @@ set(
         src/world.h
         src/profiler.h
 
+        src/devtools.c
         src/ItextureLoader.c
         src/camera.c
         src/camera.h
@@ -124,7 +126,7 @@ if(PLATFORM_DREAMCAST)
     add_definitions(-DDREAMCAST)
 
     # GLdc comes from kos-ports (libGL); headers are on the KOS include path
-    link_libraries(GL)
+    link_libraries(GL jim)
 else()
 
 endif()

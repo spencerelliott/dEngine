@@ -14,6 +14,7 @@
 
 #define GL_11_RENDERER 0
 #define GL_20_RENDERER 1
+#define PVR_RENDERER   2
 
 
 
