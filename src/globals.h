@@ -20,7 +20,7 @@ typedef unsigned short ushort ;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <internal_math.h>
 
 
 #define DEG_TO_RAD 2*3.14159265/360.0
@@ -28,5 +28,7 @@ enum {	X, Y, Z, W };
 
 #define DE_USHRT_MAX 65535
 #define DE_SHRT_MAX 32767
+
+#define DE_USE_FAST_MATH 0
 
 #endif

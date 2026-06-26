@@ -8,9 +8,10 @@
 
 
 #include "globals.h"
-#include "math.h"
+#include "internal_math.h"
 #include "quaternion.h"
 #include "md5model.h"
+#include "sh4_math.h"
 
 /* Joint info */
 typedef struct joint_info_t
@@ -34,7 +35,11 @@ typedef struct baseframe_joint_t
 
 float Quat_dotProduct (const quat4_t qa, const quat4_t qb)
 {
+#if DE_USE_FAST_MATH
+    return MATH_fipr(qa[0], qa[1], qa[2], qa[3], qb[0], qb[1], qb[2], qb[3]);
+#else
 	return ((qa[X] * qb[X]) + (qa[Y] * qb[Y]) + (qa[Z] * qb[Z]) + (qa[W] * qb[W]));
+#endif
 }
 
 void Quat_slerp (const quat4_t qa, const quat4_t qb, float t, quat4_t out)
@@ -89,7 +94,7 @@ void Quat_slerp (const quat4_t qa, const quat4_t qb, float t, quat4_t out)
     {
 		/* Compute the sin of the angle using the
 		 trig identity sin^2(omega) + cos^2(omega) = 1 */
-		float sinOmega = sqrt (1.0f - (cosOmega * cosOmega));
+		float sinOmega = MATH_Fast_Sqrt(1.0f - (cosOmega * cosOmega));
 		
 		/* Compute the angle from its sin and cosine */
 		float omega = atan2 (sinOmega, cosOmega);

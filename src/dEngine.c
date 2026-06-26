@@ -9,7 +9,7 @@
 #include "dEngine.h"
 
 #include "globals.h"
-#include "math.h"
+#include "internal_math.h"
 #include "camera.h"
 #include "renderer_fixed.h"
 #include "renderer_progr.h"

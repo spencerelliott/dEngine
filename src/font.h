@@ -12,7 +12,7 @@
 
 #include "globals.h"
 #include "texture.h"
-#include "math.h"
+#include "internal_math.h"
 
 
 typedef struct{

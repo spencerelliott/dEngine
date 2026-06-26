@@ -11,7 +11,7 @@
 
 #include "globals.h"
 #include "texture.h"
-#include "math.h"
+#include "internal_math.h"
 
 #define TEXTURE_DIFFUSE 0
 #define TEXTURE_BUMP 1

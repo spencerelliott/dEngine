@@ -7,6 +7,7 @@
  */
 
 #include "quaternion.h"
+#include "sh4_math.h"
 
 
 /**
@@ -20,20 +21,28 @@ void Quat_computeW (quat4_t q)
 	if (t < 0.0f)
 		q[W] = 0.0f;
 	else
-		q[W] = -sqrt (t);
+		q[W] = -MATH_Fast_Sqrt(t);
 }
 
 void Quat_normalize (quat4_t q)
 {
 	/* compute magnitude of the quaternion */
-	float mag = sqrt ((q[X] * q[X]) + (q[Y] * q[Y])
+#if DE_USE_FAST_MATH
+    float mag = MATH_Sum_of_Squares(q[W], q[X], q[Y], q[Z]);
+#else
+    float mag = MATH_Fast_Sqrt((q[X] * q[X]) + (q[Y] * q[Y])
 					  + (q[Z] * q[Z]) + (q[W] * q[W]));
+#endif
 	
 	/* check for bogus length, to protect against divide by zero */
 	if (mag > 0.0f)
     {
 		/* normalize it */
-		float oneOverMag = 1.0f / mag;
+#if DE_USE_FAST_MATH
+		float oneOverMag = MATH_fsrra(mag);
+#else
+        float oneOverMag = 1.0f / mag;
+#endif
 		
 		q[X] *= oneOverMag;
 		q[Y] *= oneOverMag;
@@ -44,10 +53,17 @@ void Quat_normalize (quat4_t q)
 
 void Quat_multQuat (const quat4_t qa, const quat4_t qb, quat4_t out)
 {
+#if DE_USE_FAST_MATH
+    out[W] = MATH_fipr(qa[W], -qa[X], -qa[Y], -qa[Z], qb[W], qb[X], qb[Y], qb[Z]);
+    out[X] = MATH_fipr(qa[X], qa[W], qa[Y], -qa[Z], qb[W], qb[X], qb[Z], qb[Y]);
+    out[Y] = MATH_fipr(qa[Y], qa[W], qa[Z], -qa[X], qb[W], qb[Y], qb[X], qb[Z]);
+    out[Z] = MATH_fipr(qa[Z], qa[W], qa[X], -qa[Y], qb[W], qb[Z], qb[Y], qb[X]);
+#else
 	out[W] = (qa[W] * qb[W]) - (qa[X] * qb[X]) - (qa[Y] * qb[Y]) - (qa[Z] * qb[Z]);
 	out[X] = (qa[X] * qb[W]) + (qa[W] * qb[X]) + (qa[Y] * qb[Z]) - (qa[Z] * qb[Y]);
 	out[Y] = (qa[Y] * qb[W]) + (qa[W] * qb[Y]) + (qa[Z] * qb[X]) - (qa[X] * qb[Z]);
 	out[Z] = (qa[Z] * qb[W]) + (qa[W] * qb[Z]) + (qa[X] * qb[Y]) - (qa[Y] * qb[X]);
+#endif
 }
 
 void Quat_multVec (const quat4_t q, const vec3_t v, quat4_t out)
@@ -111,40 +127,40 @@ void Quat_CreateFromMat3x3(const matrix3x3_t matrix,quat4_t out)
 	float s;
 	
 	
-	trace = 1.0 + matrix[0] + matrix[4] + matrix[8];
+	trace = 1.0f + matrix[0] + matrix[4] + matrix[8];
 	
 	if (trace > 0)
 	{
-		s = 2 * sqrt(trace) ;
-		out[0] = ( matrix[7] - matrix[5] ) / s;
-		out[1] = ( matrix[2] - matrix[6] ) / s;
-		out[2] = ( matrix[3] - matrix[1] ) / s;
-		out[3] = s / 4;
+		s =  MATH_fsrra(trace) * 0.5f;
+		out[0] = ( matrix[7] - matrix[5] ) * s;
+		out[1] = ( matrix[2] - matrix[6] ) * s;
+		out[2] = ( matrix[3] - matrix[1] ) * s;
+		out[3] = s * 4;
 		
 	}
 	else if ( matrix[0] > matrix[4] && matrix[0] > matrix[8] ) 
-	{	// Column 0: 
-		s  = sqrt( 1.0 + matrix[0] - matrix[4] - matrix[8] ) * 2;
-		out[0] = s / 4;
-		out[1] = (matrix[1] + matrix[3] ) / s;
-		out[2] = (matrix[2] + matrix[6] ) / s;
-		out[3] = (matrix[7] - matrix[5] ) / s;
+	{	// Column 0:
+        s = MATH_fsrra(1.0f + matrix[0] - matrix[4] - matrix[8]) * 0.5f;
+		out[0] = s * 4;
+		out[1] = (matrix[1] + matrix[3] ) * s;
+		out[2] = (matrix[2] + matrix[6] ) * s;
+		out[3] = (matrix[7] - matrix[5] ) * s;
 	} 
 	else if ( matrix[4] > matrix[8] ) 
-	{	// Column 1: 
-		s  = sqrt( 1.0 + matrix[4] - matrix[0] - matrix[8] ) * 2;
-		out[0] = (matrix[1] + matrix[3] ) / s;
-		out[1] =  s / 4;
-		out[2] = (matrix[5] + matrix[7] ) / s;
-		out[3] = (matrix[2] - matrix[6] ) / s;
+	{	// Column 1:
+        s = MATH_fsrra(1.0f + matrix[4] - matrix[0] - matrix[8]) * 0.5f;
+		out[0] = (matrix[1] + matrix[3] ) * s;
+		out[1] =  s * 4;
+		out[2] = (matrix[5] + matrix[7] ) * s;
+		out[3] = (matrix[2] - matrix[6] ) * s;
 	} 
 	else 
 	{	// Column 2:
-		s  = sqrt( 1.0 + matrix[8] - matrix[0] - matrix[4] ) * 2;
-		out[0] = (matrix[2] + matrix[6] ) / s;
-		out[1] = (matrix[5] + matrix[7] ) / s;
-		out[2] =  s / 4;
-		out[3] = (matrix[3] - matrix[1] ) / s;
+        s = MATH_fsrra(1.0 + matrix[8] - matrix[0] - matrix[4]) * 0.5f;
+		out[0] = (matrix[2] + matrix[6] ) * s;
+		out[1] = (matrix[5] + matrix[7] ) * s;
+		out[2] =  s * 4;
+		out[3] = (matrix[3] - matrix[1] ) * s;
 		
 	}
 	

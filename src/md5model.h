@@ -11,7 +11,7 @@
 
 
 #include "globals.h"
-#include "math.h"
+#include "internal_math.h"
 #include "matrix.h"
 #include "quaternion.h"
 #include "texture.h"

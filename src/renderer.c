@@ -7,7 +7,7 @@
  */
 
 #include "renderer.h"
-#include <math.h>
+#include <internal_math.h>
 #include "renderer_fixed.h"
 #include "renderer_progr.h"
 #include "stats.h"
@@ -62,12 +62,6 @@ void SCR_Init(int rendererType,int viewPortWidth,int viewPortHeight)
 		initFixedRenderer(&renderer);
 	}
 	
-	if (rendererType == GL_20_RENDERER)
-	{
-		printf("Running as openGL ES 2.0\n"); 
-		initProgrRenderer(&renderer);
-	}
-	
 	//Generate indices for text rendition
 	for(i=0; i < 42 ; i++)
 	{
@@ -114,22 +108,22 @@ void DrawStats()
 	
 	renderer.SetTexture(font.texfont->textureId);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,fpsText,300,400);
+	numVertices = Font_GenerateStringVertexArray(vertexString,fpsText,100,40);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,teSwText,300, 360);
+	numVertices = Font_GenerateStringVertexArray(vertexString,teSwText,100, 80);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,polCnText,300, 320);
+	numVertices = Font_GenerateStringVertexArray(vertexString,polCnText,100, 120);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,msText,300, 280);
+	numVertices = Font_GenerateStringVertexArray(vertexString,msText,100, 160);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,shSwText,300, 240);
+	numVertices = Font_GenerateStringVertexArray(vertexString,shSwText,100, 200);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
-	numVertices = Font_GenerateStringVertexArray(vertexString,bldwText,300, 200);
+	numVertices = Font_GenerateStringVertexArray(vertexString,bldwText,100, 240);
 	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
 	
 }
@@ -152,48 +146,6 @@ void SCR_RenderFrame(void)
 	
 	renderer.StopRendition();
 }
-
-
-inline void gluPerspective(float fovy, float aspect, float zNear, float zFar,matrix_t projectionMatrix)
-{
-	float f  = (float)(1 / tan(fovy*DEG_TO_RAD/2));	
-	
-	
-	projectionMatrix[0]= f/aspect;	projectionMatrix[4]= 0;	projectionMatrix[ 8]= 0;								projectionMatrix[12]= 0;
-	projectionMatrix[1]= 0; 		projectionMatrix[5]= f;	projectionMatrix[ 9]= 0;								projectionMatrix[13]= 0;
-	projectionMatrix[2]= 0;			projectionMatrix[6]= 0;	projectionMatrix[10]=(zFar+zNear)/(zNear-zFar) ;		projectionMatrix[14]= 2*(zFar*zNear)/(zNear-zFar);
-	projectionMatrix[3]= 0;			projectionMatrix[7]=0;	projectionMatrix[11]=-1;								projectionMatrix[15]= 0;
-}
-
-
-
-
-
-inline  void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp ,matrix_t fModelView)
-{
-	vec3_t vN,vU,vV;
-	
-    // determine the new n
-    vectorSubtract(vEye,vLookat,vN);
-	
-    // determine the new u by crossing with the up vector
-    vectorCrossProduct(vUp, vN, vU) ;
-	
-    // normalize both the u and n vectors
-    normalize(vU) ; 
-		normalize(vN);
-	
-    // determine v by crossing n and u
-    vectorCrossProduct(vN,vU,vV);
-	
-    // create a model view matrix
-	fModelView[0] = vU[0];					fModelView[4] = vU[1];					fModelView[8] = vU[2];					fModelView[12] = - DotProduct(vEye,vU); 
-	fModelView[1] = vV[0];					fModelView[5] = vV[1];					fModelView[9] = vV[2];					fModelView[13] = - DotProduct(vEye,vV);
-	fModelView[2] = vN[0];					fModelView[6] = vN[1];					fModelView[10]= vN[2];					fModelView[14]=  - DotProduct(vEye,vN);
-	fModelView[3]=	0.0f;					fModelView[7]= 0.0f;					fModelView[11]= 0.0f;					fModelView[15]= 1.0f;
-
-}
-
 
 void SCR_GetColorBuffer(uchar* data)
 {
