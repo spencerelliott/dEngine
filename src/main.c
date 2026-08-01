@@ -4,8 +4,10 @@
 
 #ifdef DREAMCAST
 #include <kos.h>
-#include <GL/glkos.h>
 #include <jimtcl/jim.h>
+#ifndef USE_PVR_RENDERER
+#include <GL/glkos.h>
+#endif
 #endif
 
 #include <dEngine.h>
@@ -85,15 +87,22 @@ int main(int argc, char** argv) {
         printf("%s\n", Jim_String(Jim_GetResult(jim)));
     }
 
+#ifndef USE_PVR_RENDERER
     glKosInit();
     printf("Using GLdc version: %s\n", GLDC_VERSION);
+#endif
 
     //setenv("CWD", "/cd", 1);
     setenv("CWD", "/pc", 1);
 
     renderer.statsEnabled = 1;
 
+#ifdef USE_PVR_RENDERER
+    /* The PVR is brought up by the renderer itself, inside SCR_Init. */
+    dEngine_Init(PVR_RENDERER, 640, 480);
+#else
     dEngine_Init(GL_11_RENDERER, 640, 480);
+#endif
 
     struct mallinfo malloc_info = mallinfo();
     printf("Memory stats after initializing:\n");
