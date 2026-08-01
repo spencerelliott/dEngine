@@ -11,6 +11,16 @@ set(ROMDISK_IMG "${CMAKE_SOURCE_DIR}/romdisk/romdisk.img")
 set(ROMDISK_O "${CMAKE_SOURCE_DIR}/romdisk/romdisk.o")
 set(ROMDISK_DIR "${CMAKE_SOURCE_DIR}/romdisk")
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
+set(DATA_DIR "${CMAKE_SOURCE_DIR}/data")
+
+# Where the converted runtime asset tree is written. build_disc.sh and
+# run_dctool_ip.sh both expect it at disc/.
+set(DISC_DIR "${CMAKE_SOURCE_DIR}/disc" CACHE PATH "Destination for the converted runtime asset tree")
+
+# Pixel format textures are converted to. The _pvr.mtl files reference the
+# converted files by name, so changing this means updating them to match.
+set(DREAMCAST_TEXTURE_FORMAT "ARGB4444" CACHE STRING "Pixel format texconv converts textures to")
+option(DREAMCAST_TEXTURE_COMPRESS "VQ compress converted textures" ON)
 
 message("\nPLATFORM_DREAMCAST: ${PLATFORM_DREAMCAST}")
 
@@ -172,4 +182,91 @@ else()
     else()
         add_executable(dEngine ${EXTRA_OBJS} ${SOURCES})
     endif()
+endif()
+
+# Asset conversion
+#
+# Builds the runtime tree under ${DISC_DIR} out of data/: PNGs become DTEX (.pvr)
+# textures via KallistiOS' texconv, everything else is copied across. This is the
+# same mapping build_assets.sh performs, but per file, so only what actually
+# changed is reconverted.
+#
+# The file lists are gathered at configure time, so adding or removing an asset
+# needs a re-run of cmake to be picked up.
+if(PLATFORM_DREAMCAST)
+    set(ASSET_OUTPUTS "")
+
+    if(NOT EXISTS "${TEXCONV}")
+        message(WARNING
+                "texconv was not found at '${TEXCONV}' (is KOS_BASE set?). "
+                "Assets will not be converted; run build_assets.sh by hand.")
+    else()
+        string(TOLOWER "${DREAMCAST_TEXTURE_FORMAT}" TEXTURE_SUFFIX)
+
+        if(DREAMCAST_TEXTURE_COMPRESS)
+            set(TEXCONV_COMPRESS_FLAG -c)
+        else()
+            set(TEXCONV_COMPRESS_FLAG)
+        endif()
+
+        file(GLOB_RECURSE ASSET_TEXTURES "${DATA_DIR}/*.png")
+
+        foreach(TEXTURE ${ASSET_TEXTURES})
+            file(RELATIVE_PATH TEXTURE_REL "${DATA_DIR}" "${TEXTURE}")
+
+            # Textures live beside the originals in texturesPVR/; anything else
+            # (the fonts) keeps its place in the tree.
+            if(TEXTURE_REL MATCHES "^textures/")
+                string(REGEX REPLACE "^textures/" "texturesPVR/" TEXTURE_OUT_REL "${TEXTURE_REL}")
+            else()
+                set(TEXTURE_OUT_REL "${TEXTURE_REL}")
+            endif()
+
+            set(TEXTURE_OUT "${DISC_DIR}/data/${TEXTURE_OUT_REL}.${TEXTURE_SUFFIX}.pvr")
+            get_filename_component(TEXTURE_OUT_DIR "${TEXTURE_OUT}" DIRECTORY)
+
+            add_custom_command(
+                    OUTPUT "${TEXTURE_OUT}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${TEXTURE_OUT_DIR}"
+                    COMMAND ${TEXCONV} ${TEXCONV_COMPRESS_FLAG} -f ${DREAMCAST_TEXTURE_FORMAT}
+                            -i "${TEXTURE}" -o "${TEXTURE_OUT}"
+                    DEPENDS "${TEXTURE}"
+                    COMMENT "Converting ${TEXTURE_REL} to ${DREAMCAST_TEXTURE_FORMAT}"
+                    VERBATIM
+            )
+
+            list(APPEND ASSET_OUTPUTS "${TEXTURE_OUT}")
+        endforeach()
+    endif()
+
+    # Everything the engine loads verbatim. Shaders are left out on purpose:
+    # the Dreamcast has no use for them.
+    set(ASSET_COPY_EXTENSIONS cp dat map mtl obj md5mesh md5anim scene cfg lbr)
+    set(ASSET_SOURCES "")
+
+    foreach(EXTENSION ${ASSET_COPY_EXTENSIONS})
+        file(GLOB_RECURSE FOUND_ASSETS "${DATA_DIR}/*.${EXTENSION}")
+        list(APPEND ASSET_SOURCES ${FOUND_ASSETS})
+    endforeach()
+
+    foreach(ASSET ${ASSET_SOURCES})
+        file(RELATIVE_PATH ASSET_REL "${DATA_DIR}" "${ASSET}")
+
+        set(ASSET_OUT "${DISC_DIR}/data/${ASSET_REL}")
+        get_filename_component(ASSET_OUT_DIR "${ASSET_OUT}" DIRECTORY)
+
+        add_custom_command(
+                OUTPUT "${ASSET_OUT}"
+                COMMAND ${CMAKE_COMMAND} -E make_directory "${ASSET_OUT_DIR}"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ASSET}" "${ASSET_OUT}"
+                DEPENDS "${ASSET}"
+                COMMENT "Copying ${ASSET_REL}"
+                VERBATIM
+        )
+
+        list(APPEND ASSET_OUTPUTS "${ASSET_OUT}")
+    endforeach()
+
+    add_custom_target(assets DEPENDS ${ASSET_OUTPUTS})
+    add_dependencies(dEngine assets)
 endif()
