@@ -8,10 +8,13 @@
 
 #include "ItextureLoader.h"
 #include "filesystem.h"
+
+#ifndef USE_PVR_RENDERER
 #include "GL/gl.h"
 #include "GL/glu.h"
 #include "GL/glkos.h"
 #include "GL/glext.h"
+#endif
 
 
 static char gPVRTexIdentifier[4] = "DTEX";
@@ -55,43 +58,83 @@ typedef struct _DTEXTexHeader {
 #define MAX(A,B) ((A) > (B))? (A) : (B)
 
 
-
-void loadNativePVRT(texture_t* texture)
+//Common to both backends: map the DTEX header onto the texture and pull the
+//payload out of the file. Returns 0 when the file is missing or not a DTEX.
+static int readDTEXHeader(texture_t* texture, DTEXTexHeader** headerOut)
 {
 	DTEXTexHeader* pvrHeader;
-	unsigned int flags, pvrTag;
-	unsigned int formatFlags;
-
-	unsigned int  blockSize = 0, widthBlocks = 0, heightBlocks = 0;
-	unsigned int  width = 0, height = 0, bpp = 16;
+	unsigned int pvrTag;
 
 	texture->file = FS_OpenFile(texture->path,"rb");
-	
+
 	if (!texture->file)
 	{
 		printf("[loadNativePVRT] Could not load: '%s'\n",texture->path);
-		return;
+		return 0;
 	}
-	
+
 	pvrHeader = (DTEXTexHeader *)texture->file->ptrStart;
-	
-	texture->data = malloc(texture->file->filesize - sizeof(DTEXTexHeader)) ;
-	memcpy(texture->data, texture->file->ptrStart+sizeof(DTEXTexHeader), texture->file->filesize - sizeof(DTEXTexHeader));
-	
+
 	pvrTag = pvrHeader->magic;
-	
+
 	//Analysing header magic number
 	if (gPVRTexIdentifier[0] != ((pvrTag >>  0) & 0xff) ||
 		gPVRTexIdentifier[1] != ((pvrTag >>  8) & 0xff) ||
 		gPVRTexIdentifier[2] != ((pvrTag >> 16) & 0xff) ||
 		gPVRTexIdentifier[3] != ((pvrTag >> 24) & 0xff))
 	{
-        printf("[loadNativePVRT] Invalid magic number: 0x%08x (%c%c%c%c)\n", pvrTag, ((pvrTag >>  0) & 0xff), ((pvrTag >>  8) & 0xff), ((pvrTag >>  16) & 0xff), ((pvrTag >>  24) & 0xff));
-		return ;
+		printf("[loadNativePVRT] Invalid magic number: 0x%08x (%c%c%c%c)\n", pvrTag, ((pvrTag >>  0) & 0xff), ((pvrTag >>  8) & 0xff), ((pvrTag >>  16) & 0xff), ((pvrTag >>  24) & 0xff));
+		return 0;
 	}
 
-    texture->width = pvrHeader->width;
-    texture->height = pvrHeader->height;
+	texture->width = pvrHeader->width;
+	texture->height = pvrHeader->height;
+
+	texture->dataLength = FS_GetFileSize(texture->file) - sizeof(DTEXTexHeader);
+	texture->data = malloc(texture->dataLength);
+	memcpy(texture->data, texture->file->ptrStart+sizeof(DTEXTexHeader), texture->dataLength);
+
+	FS_FileSeek(texture->file, 0, SEEK_SET);
+
+	*headerOut = pvrHeader;
+
+	return 1;
+}
+
+
+#ifdef USE_PVR_RENDERER
+
+//The PVR renderer consumes DTEX data as-is: the asset pipeline already emits it
+//twiddled and VQ compressed in the layout the hardware expects, and the header's
+//'type' field is the texture control word the TA wants. Keep it whole and let
+//the renderer mask out the bits it needs.
+void loadNativePVRT(texture_t* texture)
+{
+	DTEXTexHeader* pvrHeader;
+
+	if (!readDTEXHeader(texture, &pvrHeader))
+		return;
+
+	texture->type = pvrHeader->type;
+	texture->compressed = (pvrHeader->type & (1 << 30)) > 0;
+	texture->format = TEXTURE_PVR_NATIVE;
+	texture->internal_format = TEXTURE_PVR_NATIVE;
+
+	printf("[loadNativePVRT] %ux%u PVR texture, control word 0x%08x%s\n",
+		   texture->width, texture->height, texture->type,
+		   texture->compressed ? " (VQ compressed)" : "");
+}
+
+#else
+
+void loadNativePVRT(texture_t* texture)
+{
+	DTEXTexHeader* pvrHeader;
+	unsigned int flags;
+	unsigned int formatFlags;
+
+	if (!readDTEXHeader(texture, &pvrHeader))
+		return;
 
     GLboolean twiddled = (pvrHeader->type & (1 << 26)) < 1;
     GLboolean compressed = (pvrHeader->type & (1 << 30)) > 0;
@@ -146,6 +189,6 @@ void loadNativePVRT(texture_t* texture)
     texture->internal_format = (formatFlags == 1) ? GL_RGB : GL_RGBA;
     texture->type = lookup[(compressed << 2) | (twiddled << 1) | mipmapped];
     texture->compressed = compressed;
-    FS_FileSeek(texture->file, 0, SEEK_SET);
-    texture->dataLength = FS_GetFileSize(texture->file) - sizeof(DTEXTexHeader);
 }
+
+#endif

@@ -61,7 +61,7 @@ void Set2DF(void)
 	
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-	glOrtho(-renderWidth, renderWidth, -renderHeight, renderHeight, -1, 1);
+	glOrtho(-renderWidth, renderWidth, -renderHeight, renderHeight, -10, 10);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
