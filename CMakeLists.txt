@@ -14,6 +14,14 @@ set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
 
 message("\nPLATFORM_DREAMCAST: ${PLATFORM_DREAMCAST}")
 
+# Dreamcast builds talk to the PowerVR through KallistiOS directly. Flip this on
+# to fall back to the old GLdc/OpenGL renderer instead.
+option(DREAMCAST_USE_GLDC "Render through GLdc/OpenGL on Dreamcast instead of the native PVR API" OFF)
+
+if(PLATFORM_DREAMCAST AND NOT DREAMCAST_USE_GLDC)
+    set(USE_PVR_RENDERER ON)
+endif()
+
 set(CMAKE_C_STANDARD 99)
 
 include_directories(src)
@@ -49,7 +57,6 @@ set(
         src/obj.h
         src/quaternion.h
         src/renderer.h
-        src/renderer_fixed.h
         src/stats.h
         src/texture.h
         src/timer.h
@@ -77,7 +84,6 @@ set(
         src/obj.c
         src/quaternion.c
         src/renderer.c
-        src/renderer_fixed.c
         src/stats.c
         src/texture.c
         src/timer.c
@@ -87,11 +93,20 @@ set(
         src/main.c
 )
 
+# Pick the rendering backend
+if(USE_PVR_RENDERER)
+    list(APPEND SOURCES src/renderer_pvr.h src/renderer_pvr.c)
+else()
+    list(APPEND SOURCES src/renderer_fixed.h src/renderer_fixed.c)
+endif()
+
 # Determine whether we are building Debug or Release
 string(TOLOWER ${CMAKE_BUILD_TYPE} CONFIGURATION)
 
-include_directories(GLdc/include)
-link_directories(GLdc/lib/${CONFIGURATION})
+if(NOT USE_PVR_RENDERER)
+    include_directories(GLdc/include)
+    link_directories(GLdc/lib/${CONFIGURATION})
+endif()
 
 if(ENGINE_DEBUG)
     add_definitions(-DENGINE_DEBUG)
@@ -128,7 +143,14 @@ if(PLATFORM_DREAMCAST)
 
     add_definitions(-DDREAMCAST)
 
-    link_libraries(GLdc jim)
+    if(USE_PVR_RENDERER)
+        message("Using the native PowerVR renderer (no OpenGL dependency)")
+        add_definitions(-DUSE_PVR_RENDERER)
+        link_libraries(jim)
+    else()
+        message("Using the GLdc OpenGL renderer")
+        link_libraries(GLdc jim)
+    endif()
 else()
 
 endif()

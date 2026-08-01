@@ -9,10 +9,15 @@
 #include "renderer.h"
 #include <internal_math.h>
 #include <malloc.h>
-#include "renderer_fixed.h"
-#include "renderer_progr.h"
 #include "stats.h"
 #include "timer.h"
+
+#ifdef USE_PVR_RENDERER
+#include "renderer_pvr.h"
+#else
+#include "renderer_fixed.h"
+#include "renderer_progr.h"
+#endif
 
 int renderWidth;
 int renderHeight;
@@ -61,12 +66,20 @@ void SCR_Init(int rendererType,int viewPortWidth,int viewPortHeight)
     renderWidth =  viewPortWidth;
     renderHeight = viewPortHeight;
     
+#ifdef USE_PVR_RENDERER
+	if (rendererType != PVR_RENDERER)
+		printf("Only the native PVR renderer is available in this build, ignoring requested type %d\n", rendererType);
+
+	printf("Running on the Dreamcast PowerVR\n");
+	initPVRRenderer(&renderer);
+#else
 	if (rendererType == GL_11_RENDERER)
 	{
 		printf("Running as openGL ES 1.1\n");
 		initFixedRenderer(&renderer);
 	}
-	
+#endif
+
 	//Generate indices for text rendition
 	for(i=0; i < 42 ; i++)
 	{

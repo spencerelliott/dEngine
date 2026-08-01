@@ -17,6 +17,10 @@
 #define TEXTURE_GL_RGB			0x1907
 #define TEXTURE_GL_RGBA			0x1908
 
+//Native PowerVR texture. 'type' then holds the DTEX control word rather than a
+//GL enum, and is consumed directly by the PVR renderer.
+#define TEXTURE_PVR_NATIVE		0x0100
+
 
 
 typedef struct  {
