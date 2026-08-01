@@ -151,11 +151,10 @@ if(PLATFORM_DREAMCAST)
     if(USE_PVR_RENDERER)
         message("Using the native PowerVR renderer (no OpenGL dependency)")
         add_definitions(-DUSE_PVR_RENDERER)
-        link_libraries(jim)
     else()
         # GLdc comes from kos-ports (libGL); headers are on the KOS include path
         message("Using the GLdc OpenGL renderer")
-        link_libraries(GL jim)
+        link_libraries(GL)
     endif()
 else()
 

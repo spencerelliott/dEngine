@@ -4,7 +4,6 @@
 
 #ifdef DREAMCAST
 #include <kos.h>
-#include <jimtcl/jim.h>
 #ifndef USE_PVR_RENDERER
 #include <GL/glkos.h>
 #endif
@@ -71,21 +70,6 @@ int main(int argc, char** argv) {
     devtools_init();
     devtools_register_handler(DEVTOOLS_ID_PRINT, print_handler);
 #endif
-
-
-    Jim_Interp *jim;
-    jim = Jim_CreateInterp();
-    Jim_RegisterCoreCommands(jim);
-
-    int retcode = Jim_EvalFile(jim, "/rd/hello.tcl");
-
-    if (retcode != JIM_ERR) {
-        int len;
-        const char *msg = Jim_GetString(Jim_GetResult(jim), &len);
-        printf("%s\n", msg);
-    } else {
-        printf("%s\n", Jim_String(Jim_GetResult(jim)));
-    }
 
 #ifndef USE_PVR_RENDERER
     glKosInit();
