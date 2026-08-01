@@ -187,9 +187,8 @@ endif()
 # Asset conversion
 #
 # Builds the runtime tree under ${DISC_DIR} out of data/: PNGs become DTEX (.pvr)
-# textures via KallistiOS' texconv, everything else is copied across. This is the
-# same mapping build_assets.sh performs, but per file, so only what actually
-# changed is reconverted.
+# textures via KallistiOS' texconv, everything else is copied across. Rules are
+# per file, so only what actually changed is reconverted.
 #
 # The file lists are gathered at configure time, so adding or removing an asset
 # needs a re-run of cmake to be picked up.
@@ -199,7 +198,8 @@ if(PLATFORM_DREAMCAST)
     if(NOT EXISTS "${TEXCONV}")
         message(WARNING
                 "texconv was not found at '${TEXCONV}' (is KOS_BASE set?). "
-                "Assets will not be converted; run build_assets.sh by hand.")
+                "Textures will not be converted, so ${DISC_DIR} will be missing "
+                "them and the engine will fail to load its materials.")
     else()
         string(TOLOWER "${DREAMCAST_TEXTURE_FORMAT}" TEXTURE_SUFFIX)
 
