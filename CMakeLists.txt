@@ -32,6 +32,7 @@ set(
         src/sh4_math.h
         src/ItextureLoader.h
         src/camera.h
+        src/collision.h
         src/commands.h
         src/config.h
         src/dEngine.h
@@ -45,6 +46,7 @@ set(
         src/internal_math.h
         src/matrix.h
         src/md5model.h
+        src/physics.h
         src/obj.h
         src/quaternion.h
         src/renderer.h
@@ -58,6 +60,7 @@ set(
         src/ItextureLoader.c
         src/camera.c
         src/camera.h
+        src/collision.c
         src/commands.c
         src/commands.h
         src/config.c
@@ -73,6 +76,7 @@ set(
         src/md5anim.c
         src/md5model.c
         src/obj.c
+        src/physics.c
         src/quaternion.c
         src/renderer.c
         src/renderer_fixed.c
@@ -129,6 +133,23 @@ if(PLATFORM_DREAMCAST)
     link_libraries(GLdc)
 else()
 
+endif()
+
+option(BUILD_PHYSICS_TESTS "Build the host side physics and collision test suite" OFF)
+
+if(BUILD_PHYSICS_TESTS AND NOT PLATFORM_DREAMCAST)
+    # The simulation only depends on the collision module and a few math macros,
+    # so it builds and runs on the host without a Dreamcast toolchain.
+    add_executable(dEngine_physics_test
+            tests/physics_test.c
+            src/collision.c
+            src/physics.c
+    )
+    target_include_directories(dEngine_physics_test PRIVATE src)
+    target_link_libraries(dEngine_physics_test m)
+
+    enable_testing()
+    add_test(NAME physics COMMAND dEngine_physics_test)
 endif()
 
 execute_process(
