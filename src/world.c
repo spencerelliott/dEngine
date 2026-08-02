@@ -17,6 +17,7 @@
 #include "filesystem.h"
 #include "lexer.h"
 #include "obj.h"
+#include "audio.h"
 
 light_t light;
 
@@ -120,6 +121,77 @@ void World_ReadMD5s(de_matrix_t currentMatrix)
 	}	
 }
 
+/*
+ * music
+ * {
+ *     filename : data/music/theme.wav
+ *     volume   : 255
+ *     loop     : 1
+ * }
+ */
+void World_ReadMusic(void)
+{
+	char filename[MAX_GAMEPATH];
+	int volume;
+	uchar loop;
+
+	filename[0] = '\0';
+	volume = AUDIO_VOLUME_MAX;
+	loop = 1;
+
+	LE_readToken(); // {
+	LE_readToken();
+	while (strcmp("}", LE_getCurrentToken()))
+	{
+		if (!strcmp("filename", LE_getCurrentToken()))
+		{
+			LE_readToken();
+			strncpy(filename, LE_getCurrentToken(), MAX_GAMEPATH-1);
+			filename[MAX_GAMEPATH-1] = '\0';
+		}
+		else
+		if (!strcmp("volume", LE_getCurrentToken()))
+		{
+			volume = (int)LE_readReal();
+		}
+		else
+		if (!strcmp("loop", LE_getCurrentToken()))
+		{
+			LE_readToken();
+			loop = !strcmp("1", LE_getCurrentToken());
+		}
+
+		LE_readToken();
+	}
+
+	if (!filename[0])
+		return;
+
+	Audio_SetMusicVolume(volume);
+	Audio_PlayMusic(filename, loop);
+}
+
+/*
+ * sounds
+ * {
+ *     data/sounds/door.wav
+ *     data/sounds/hit.wav
+ * }
+ *
+ * Every clip listed here is uploaded to the audio processor before the scene
+ * starts, and can then be played with Audio_PlayClip(Audio_FindClip(path)).
+ */
+void World_ReadSounds(void)
+{
+	LE_readToken(); // {
+	LE_readToken();
+	while (strcmp("}", LE_getCurrentToken()))
+	{
+		Audio_LoadClip(LE_getCurrentToken());
+		LE_readToken();
+	}
+}
+
 void World_Loadmap(char* mapFileName)
 {
 	filehandle_t* mapFile ;
@@ -186,7 +258,11 @@ void World_OpenScene(char* filename)
 	}
 	
 	printf("[World_OpenScene] Found scene: '%s'.\n",filename);
-	
+
+	/* Whatever the previous scene was playing does not belong to this one. */
+	Audio_StopMusic();
+	Audio_UnloadAllClips();
+
 	LE_pushLexer();
 	LE_init(sceneFile);
 	
@@ -276,6 +352,16 @@ void World_OpenScene(char* filename)
 				LE_readToken();
 				//printf("lgiht token=%s\n",LE_getCurrentToken());
 			}
+		}
+		else
+		if (!strcmp("music", LE_getCurrentToken()))
+		{
+			World_ReadMusic();
+		}
+		else
+		if (!strcmp("sounds", LE_getCurrentToken()))
+		{
+			World_ReadSounds();
 		}
 	}
 
