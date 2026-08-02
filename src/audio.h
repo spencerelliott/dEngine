@@ -12,12 +12,14 @@
  *    files (8/16 bit PCM or 4 bit Yamaha ADPCM) and, because of an AICA
  *    limitation, cannot be longer than 65534 samples.
  *
- *  - Music: a single background track streamed straight from the disc, so
- *    the whole track never has to fit in memory. Music is loaded from a WAV
- *    file as well (same formats as clips) and can be looped forever.
+ *  - Music: a single background track, either streamed straight from the disc
+ *    (from a WAV file, same formats as clips, so the whole track never has to
+ *    fit in memory) or played as a CDDA track by the GD-ROM drive itself.
+ *    Either way it can be looped forever, and the same calls stop, pause and
+ *    set the volume of both.
  *
  *  Audio_Update() must be called once per frame: this is what feeds the
- *  streaming music to the SPU.
+ *  streaming music to the SPU. CDDA needs nothing of the sort.
  */
 
 #ifndef DE_AUDIO
@@ -81,11 +83,24 @@ int  Audio_GetClipVolume(void);
 
 /*
  * Music.
+ *
+ * Only one background music plays at a time, whatever it is streamed from:
+ * starting one stops the other.
  */
 
 /* Streams a WAV file from the disc. Any music already playing is stopped.
    Returns 1 if the track could be started. */
 uchar Audio_PlayMusic(const char* filename, uchar loop);
+
+/* Plays an audio track pressed on the disc. The GD-ROM drive decodes it and
+   the audio processor mixes it straight into the output, so playback costs no
+   CPU time at all: this is the cheapest way to play background music. Tracks
+   are numbered the way they are laid out on the disc, the first one being 1.
+   Returns 1 if the drive started playing the track. */
+uchar Audio_PlayCDDATrack(int track, uchar loop);
+
+/* Track the drive is playing, 0 when the music is not a CDDA track. */
+int Audio_GetCDDATrack(void);
 
 void  Audio_StopMusic(void);
 void  Audio_PauseMusic(void);

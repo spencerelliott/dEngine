@@ -122,6 +122,18 @@ void World_ReadMD5s(de_matrix_t currentMatrix)
 }
 
 /*
+ * The background music of a scene is either a track pressed on the disc,
+ * which costs no CPU time at all:
+ *
+ * music
+ * {
+ *     track  : 1
+ *     volume : 255
+ *     loop   : 1
+ * }
+ *
+ * or a file streamed from the disc:
+ *
  * music
  * {
  *     filename : data/music/theme.wav
@@ -132,10 +144,12 @@ void World_ReadMD5s(de_matrix_t currentMatrix)
 void World_ReadMusic(void)
 {
 	char filename[MAX_GAMEPATH];
+	int track;
 	int volume;
 	uchar loop;
 
 	filename[0] = '\0';
+	track = 0;
 	volume = AUDIO_VOLUME_MAX;
 	loop = 1;
 
@@ -148,6 +162,11 @@ void World_ReadMusic(void)
 			LE_readToken();
 			strncpy(filename, LE_getCurrentToken(), MAX_GAMEPATH-1);
 			filename[MAX_GAMEPATH-1] = '\0';
+		}
+		else
+		if (!strcmp("track", LE_getCurrentToken()))
+		{
+			track = (int)LE_readReal();
 		}
 		else
 		if (!strcmp("volume", LE_getCurrentToken()))
@@ -164,11 +183,21 @@ void World_ReadMusic(void)
 		LE_readToken();
 	}
 
-	if (!filename[0])
-		return;
-
 	Audio_SetMusicVolume(volume);
-	Audio_PlayMusic(filename, loop);
+
+	/* A CDDA track is the cheapest of the two, it wins when both are given. */
+	if (track > 0)
+	{
+		if (filename[0])
+			printf("[World_ReadMusic] Both a CDDA track and a file are set, playing track %d.\n", track);
+
+		Audio_PlayCDDATrack(track, loop);
+	}
+	else
+	if (filename[0])
+	{
+		Audio_PlayMusic(filename, loop);
+	}
 }
 
 /*

@@ -18,12 +18,31 @@
 
 #include <malloc.h>
 
+#include <dc/cdrom.h>
+#include <dc/spu.h>
 #include <dc/sound/sound.h>
 #include <dc/sound/sfxmgr.h>
 #include <dc/sound/stream.h>
 
 /* Number of channels the AICA offers. */
 #define AUDIO_MAX_VOICES            64
+
+/* Where the background music comes from. */
+#define AUDIO_MUSIC_NONE            0
+#define AUDIO_MUSIC_STREAM          1
+#define AUDIO_MUSIC_CDDA            2
+
+/* A disc holds at most 99 tracks. */
+#define AUDIO_CDDA_MAX_TRACK        99
+
+/* Number of repeats that makes the drive loop a track forever. */
+#define AUDIO_CDDA_LOOP_FOREVER     15
+
+/* The audio processor mixes CDDA on its own scale. */
+#define AUDIO_CDDA_VOLUME_MAX       15
+
+/* Bit of a TOC entry control field marking a data track. */
+#define AUDIO_TOC_CTRL_DATA         4
 
 /* Size of one channel of the music buffer. The sound stream driver asks for
    at most that many bytes per channel every time it needs to be fed. */
@@ -85,6 +104,9 @@ static audioMusic_t     music;
 
 static uchar    audioInitialized = 0;
 static uchar    musicEnabled = 0;
+static uchar    musicSource = AUDIO_MUSIC_NONE;
+static int      cddaTrack = 0;
+static uchar    cddaPaused = 0;
 static int      clipVolume = AUDIO_VOLUME_MAX;
 static int      musicVolume = AUDIO_VOLUME_MAX;
 
@@ -486,7 +508,7 @@ int Audio_GetClipVolume(void)
 }
 
 /*
- * Music.
+ * Music, streamed from a file.
  */
 
 /*
@@ -662,14 +684,13 @@ uchar Audio_PlayMusic(const char* filename, uchar loop)
            filename, music.rate, music.channels == 1 ? "mono" : "stereo", music.bits,
            music.loop ? "looping" : "one shot");
 
+    musicSource = AUDIO_MUSIC_STREAM;
+
     return 1;
 }
 
-void Audio_StopMusic(void)
+static void Audio_StopMusicStream(void)
 {
-    if (!audioInitialized)
-        return;
-
     if (music.stream != SND_STREAM_INVALID)
     {
         snd_stream_stop(music.stream);
@@ -686,8 +707,139 @@ void Audio_StopMusic(void)
     music.stream = SND_STREAM_INVALID;
 }
 
+/*
+ * Music, played from a CDDA track.
+ */
+
+static void Audio_ApplyCDDAVolume(void)
+{
+    int level;
+
+    level = (musicVolume * AUDIO_CDDA_VOLUME_MAX) / AUDIO_VOLUME_MAX;
+
+    spu_cdda_volume(level, level);
+}
+
+/*
+ * Makes sure the disc in the drive really holds an audio track under that
+ * number: handing the drive a data track would push noise to the speakers.
+ */
+static uchar Audio_IsCDDATrack(int track)
+{
+    cd_toc_t toc;
+    uchar readToc = 0;
+    int first;
+    int last;
+    int area;
+
+    /* Audio tracks sit in the first session of a MIL-CD, but a GD-ROM holds
+       them in its high density area: look in both. */
+    for (area = 0; area < 2; area++)
+    {
+        if (cdrom_read_toc(&toc, area) != ERR_OK)
+            continue;
+
+        readToc = 1;
+
+        first = (int)TOC_TRACK(toc.first);
+        last = (int)TOC_TRACK(toc.last);
+
+        if (first < 1 || last > AUDIO_CDDA_MAX_TRACK || track < first || track > last)
+            continue;
+
+        if (TOC_CTRL(toc.entry[track - 1]) & AUDIO_TOC_CTRL_DATA)
+        {
+            printf("[Audio] Track %d holds data, not CDDA audio.\n", track);
+            return 0;
+        }
+
+        return 1;
+    }
+
+    if (!readToc)
+        printf("[Audio] The drive holds no readable disc, CDDA track %d cannot be played.\n", track);
+    else
+        printf("[Audio] The disc in the drive has no track %d.\n", track);
+
+    return 0;
+}
+
+uchar Audio_PlayCDDATrack(int track, uchar loop)
+{
+    if (!audioInitialized)
+        return 0;
+
+    if (track < 1 || track > AUDIO_CDDA_MAX_TRACK)
+    {
+        printf("[Audio] %d is not a valid CDDA track number.\n", track);
+        return 0;
+    }
+
+    Audio_StopMusic();
+
+    if (!Audio_IsCDDATrack(track))
+        return 0;
+
+    if (cdrom_cdda_play(track, track, loop ? AUDIO_CDDA_LOOP_FOREVER : 0, CDDA_TRACKS) != ERR_OK)
+    {
+        printf("[Audio] The drive refused to play CDDA track %d.\n", track);
+        return 0;
+    }
+
+    cddaTrack = track;
+    cddaPaused = 0;
+    musicSource = AUDIO_MUSIC_CDDA;
+
+    Audio_ApplyCDDAVolume();
+
+    printf("[Audio] Playing CDDA track %d (%s).\n", track, loop ? "looping" : "one shot");
+
+    return 1;
+}
+
+int Audio_GetCDDATrack(void)
+{
+    return musicSource == AUDIO_MUSIC_CDDA ? cddaTrack : 0;
+}
+
+static void Audio_StopCDDA(void)
+{
+    if (!cddaTrack)
+        return;
+
+    /* Pausing the drive is what silences it: spinning it down would only make
+       the next asset read wait for it to spin back up. */
+    cdrom_cdda_pause();
+
+    cddaTrack = 0;
+    cddaPaused = 0;
+}
+
+/*
+ * Music, whatever it plays from.
+ */
+
+void Audio_StopMusic(void)
+{
+    if (!audioInitialized)
+        return;
+
+    Audio_StopMusicStream();
+    Audio_StopCDDA();
+
+    musicSource = AUDIO_MUSIC_NONE;
+}
+
 void Audio_PauseMusic(void)
 {
+    if (musicSource == AUDIO_MUSIC_CDDA)
+    {
+        if (!cddaPaused && cdrom_cdda_pause() == ERR_OK)
+            cddaPaused = 1;
+
+        return;
+    }
+
     /* The stream keeps running and is fed silence, so that resuming picks up
        exactly where the track was left. */
     music.paused = 1;
@@ -695,11 +847,35 @@ void Audio_PauseMusic(void)
 
 void Audio_ResumeMusic(void)
 {
+    if (musicSource == AUDIO_MUSIC_CDDA)
+    {
+        if (cddaPaused && cdrom_cdda_resume() == ERR_OK)
+            cddaPaused = 0;
+
+        return;
+    }
+
     music.paused = 0;
 }
 
 uchar Audio_IsMusicPlaying(void)
 {
+    int status;
+    int discType;
+
+    if (musicSource == AUDIO_MUSIC_CDDA)
+    {
+        if (cddaPaused)
+            return 1;
+
+        /* Only the drive knows whether a one shot track is over, and asking
+           it costs a syscall: this is not meant to be called every frame. */
+        if (cdrom_get_status(&status, &discType) != ERR_OK)
+            return cddaTrack != 0;
+
+        return status == CD_STATUS_PLAYING || status == CD_STATUS_BUSY || status == CD_STATUS_SEEKING;
+    }
+
     return music.playing && !music.finished;
 }
 
@@ -707,7 +883,9 @@ void Audio_SetMusicVolume(int volume)
 {
     musicVolume = Audio_ClampVolume(volume);
 
-    if (music.playing)
+    if (musicSource == AUDIO_MUSIC_CDDA)
+        Audio_ApplyCDDAVolume();
+    else if (music.playing)
         snd_stream_volume(music.stream, musicVolume);
 }
 
@@ -731,6 +909,9 @@ void Audio_Init(void)
     memset(&music, 0, sizeof(audioMusic_t));
 
     music.stream = SND_STREAM_INVALID;
+    musicSource = AUDIO_MUSIC_NONE;
+    cddaTrack = 0;
+    cddaPaused = 0;
 
     for (i = 0; i < AUDIO_MAX_VOICES; i++)
         voiceClips[i] = AUDIO_INVALID_CLIP;
@@ -773,7 +954,9 @@ void Audio_Shutdown(void)
 
 void Audio_Update(void)
 {
-    if (!audioInitialized || !music.playing)
+    /* A CDDA track is decoded by the drive and mixed by the audio processor,
+       there is nothing to service here while one plays. */
+    if (!audioInitialized || musicSource != AUDIO_MUSIC_STREAM || !music.playing)
         return;
 
     /* -3 only means the callback had nothing to hand over, which is what
@@ -823,6 +1006,8 @@ void Audio_SetClipVolume(int volume) { (void)volume; }
 int  Audio_GetClipVolume(void) { return AUDIO_VOLUME_MAX; }
 
 uchar Audio_PlayMusic(const char* filename, uchar loop) { (void)filename; (void)loop; return 0; }
+uchar Audio_PlayCDDATrack(int track, uchar loop) { (void)track; (void)loop; return 0; }
+int   Audio_GetCDDATrack(void) { return 0; }
 void  Audio_StopMusic(void) {}
 void  Audio_PauseMusic(void) {}
 void  Audio_ResumeMusic(void) {}
