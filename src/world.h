@@ -33,9 +33,26 @@ typedef struct light_t {
 void World_Init(void);
 void World_Update(void);
 
+/* Defined in world.c but historically undeclared. */
+void World_OpenScene(char* filename);
+void World_Loadmap(char* mapFileName);
+
+/* Scene lifecycle. World_LoadScene tears the current scene down first, so it is
+   safe to call repeatedly. Never call it mid-frame: the renderer walks map[]
+   directly. Game code should use Game_RequestScene() instead, which defers to a
+   frame boundary. */
+int         World_LoadScene(const char* sceneFilename);
+void        World_UnloadScene(void);
+const char* World_CurrentScene(void);
+
+/* Slot management shared by the map parser and the game object layer, so there
+   is one code path by which an entity comes into being. */
+entity_t* World_AllocEntity(void);
+void      World_FreeEntity(entity_t* entity);
+
 extern light_t light;
 
-extern entity_t map[256];
-extern uchar num_map_entities;
+extern entity_t map[MAX_MAP_ENTITIES];
+extern ushort num_map_entities;
 
 #endif
