@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.0)
+# 3.12 is the floor for file(GLOB CONFIGURE_DEPENDS), which is what makes the
+# game/ directory pick itself up. It also clears CMake 4.x's hard minimum of 3.5.
+cmake_minimum_required(VERSION 3.12)
 project(dEngine C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -55,6 +57,10 @@ set(
         src/world.h
         src/profiler.h
 
+        src/dgame.h
+        src/game_internal.h
+        src/input.h
+
         src/ItextureLoader.c
         src/camera.c
         src/camera.h
@@ -68,7 +74,6 @@ set(
         src/font.c
         src/lexer.c
         src/material.c
-        src/internal_math.c
         src/matrix.c
         src/md5anim.c
         src/md5model.c
@@ -82,10 +87,38 @@ set(
         src/world.c
         src/profiler.c
 
+        src/game_hooks.c
+        src/game_object.c
+        src/game_runtime.c
+        src/input.c
+        src/input_actions.c
+
         src/main.c
 )
 
-# Determine whether we are building Debug or Release
+# Anything dropped into game/ is compiled in automatically. CONFIGURE_DEPENDS
+# makes the Makefile and Ninja generators re-run this glob at build time, so
+# adding or removing a script triggers a reconfigure on the next build with no
+# manual cmake invocation.
+file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/game/*.c")
+list(SORT GAME_SOURCES)
+list(LENGTH GAME_SOURCES GAME_SOURCE_COUNT)
+message(STATUS "Game sources found: ${GAME_SOURCE_COUNT}")
+
+# A hook defined without including dgame.h has no visible prototype, so it would
+# silently fail to match the engine's signature. Warn on that.
+if(GAME_SOURCES)
+    set_source_files_properties(${GAME_SOURCES} PROPERTIES
+        COMPILE_OPTIONS "-Wmissing-prototypes;-Wstrict-prototypes")
+endif()
+
+# Determine whether we are building Debug or Release.
+# An unset CMAKE_BUILD_TYPE used to make the string() call below fail outright,
+# so a bare `cmake -S . -B build` could not configure at all.
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
 string(TOLOWER ${CMAKE_BUILD_TYPE} CONFIGURATION)
 
 include_directories(GLdc/include)
@@ -139,13 +172,18 @@ execute_process(
 
 link_libraries(m)
 
+# Game sources are passed as objects rather than bundled into a static library.
+# An archive member is only pulled into the link if it resolves a symbol that is
+# still undefined -- and the weak defaults in game_hooks.c mean every hook is
+# already defined by then, so a game's strong override would never be extracted
+# and the no-op would silently win.
 if(PLATFORM_DREAMCAST)
-    add_executable(dEngine ${EXTRA_OBJS} ${SOURCES})
+    add_executable(dEngine ${EXTRA_OBJS} ${SOURCES} ${GAME_SOURCES})
 else()
     add_definitions(-g)
     if(WIN32)
-        add_executable(dEngine.exe ${EXTRA_OBJS} ${SOURCES})
+        add_executable(dEngine.exe ${EXTRA_OBJS} ${SOURCES} ${GAME_SOURCES})
     else()
-        add_executable(dEngine ${EXTRA_OBJS} ${SOURCES})
+        add_executable(dEngine ${EXTRA_OBJS} ${SOURCES} ${GAME_SOURCES})
     endif()
 endif()

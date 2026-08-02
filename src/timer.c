@@ -105,6 +105,14 @@ void Timer_tick(void)
 }
 
 
+void Timer_Skip(void)
+{
+	currentTime = E_Sys_Milliseconds();
+	lastTime = currentTime;
+	timediff = 0;
+}
+
+
 int renderedFrames=0;
 
 void Timer_resetTime(void)

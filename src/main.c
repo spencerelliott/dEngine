@@ -9,6 +9,7 @@
 #include "renderer.h"
 #include "world.h"
 #include "profiler.h"
+#include "game_internal.h"
 
 KOS_INIT_FLAGS(INIT_DEFAULT);
 
@@ -18,6 +19,8 @@ KOS_INIT_ROMDISK(romdisk);
 #define DO_PROFILING 0
 
 int main(int argc, char** argv) {
+    dg_config_t cfg;
+
     glKosInit();
 
     setenv("CWD", "/cd", 1);
@@ -25,7 +28,17 @@ int main(int argc, char** argv) {
 
     //renderer.statsEnabled = 1;
 
-    dEngine_Init(GL_11_RENDERER, 640, 480);
+    /* Engine defaults, then a chance for a game/ script to override them. This
+       has to happen before dEngine_Init because it can pick the boot scene. */
+    cfg.rendererType = GL_11_RENDERER;
+    cfg.width = 640;
+    cfg.height = 480;
+    cfg.bootScene = 0;
+    cfg.debugCamera = 1;
+
+    DG_ApplyConfig(&cfg);
+
+    dEngine_Init(cfg.rendererType, cfg.width, cfg.height);
 
     struct mallinfo malloc_info = mallinfo();
     printf("Memory stats after initializing:\n");
@@ -39,9 +52,9 @@ int main(int argc, char** argv) {
 
     profiler_init("/pc/dEngine_prof.out");
     profiler_start();
-    while (count < 30) {
+    while (count < 30 && !dEngine_ShouldQuit()) {
 #else
-    while(1) {
+    while(!dEngine_ShouldQuit()) {
 #endif
         dEngine_HostFrame();
 
@@ -54,6 +67,8 @@ int main(int argc, char** argv) {
     #endif
     }
     profiler_stop();
+
+    dEngine_Shutdown();
 
     return 0;
 }
