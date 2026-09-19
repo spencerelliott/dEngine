@@ -5,7 +5,7 @@ rm -rf disc/
 mkdir disc/
 
 # Copy all non-image assets to the disc folder
-for ext in data/**/*.{cp,dat,map,mtl,obj,md5mesh,md5anim,scene,cfg,lbr};
+for ext in data/**/*.{cp,dat,map,mtl,obj,md5mesh,md5anim,scene,cfg,lbr,wav};
 do
   # Convert image assets
   for f in $ext;

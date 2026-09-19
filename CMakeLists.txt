@@ -31,6 +31,7 @@ set(
     SOURCES
         src/sh4_math.h
         src/ItextureLoader.h
+        src/audio.h
         src/camera.h
         src/commands.h
         src/config.h
@@ -56,6 +57,7 @@ set(
         src/profiler.h
 
         src/ItextureLoader.c
+        src/audio.c
         src/camera.c
         src/camera.h
         src/commands.c
