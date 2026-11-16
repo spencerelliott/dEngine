@@ -149,5 +149,13 @@ refcounting textures by path and de-aliasing the cache.
 
 ## Physics
 
-Not implemented. There is no collision, no rigid bodies and no raycasting in the
-engine, and this layer does not stub any. Objects go exactly where you put them.
+`dgame.h` does not wrap the physics module. Include `physics.h` alongside it
+and drive bodies directly. The engine already initialises and steps the
+simulation. Physics steps between `Game_Update` and `Game_LateUpdate`, and
+bodies are not cleared on a scene swap. See [docs/PHYSICS.md](../docs/PHYSICS.md).
+
+## Examples
+
+[`examples/`](../examples/README.md) has a small game for each system
+(physics, a character controller, audio, behaviors, input). Build one in place
+of this directory with `./dc-build.sh --example <name>`.

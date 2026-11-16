@@ -1,7 +1,8 @@
 # dEngine (Dreamcast)
 
 ## Building
-Run `./dc-build.sh [Release|Debug] [--cdi]`. It builds inside the official KallistiOS
+Run `./dc-build.sh [Release|Debug] [--cdi] [--example <name>]`. `--example`
+compiles `examples/<name>/` in place of `game/` (CMake `DENGINE_EXAMPLE`). It builds inside the official KallistiOS
 Docker image (`kallistios/dc-kos-toolchain`: KOS 2.1, GCC 14.2). It starts `dockerd`
 if needed and pulls the image if it is missing. Output goes to
 `cmake-build-<type>-dreamcast/dEngine.elf`; `--cdi` also packs `dEngine.cdi`
