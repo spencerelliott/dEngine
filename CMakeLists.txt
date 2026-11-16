@@ -131,10 +131,25 @@ endif()
 # makes the Makefile and Ninja generators re-run this glob at build time, so
 # adding or removing a script triggers a reconfigure on the next build with no
 # manual cmake invocation.
-file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/game/*.c")
+#
+# DENGINE_EXAMPLE swaps game/ for one of the directories under examples/. Every
+# example defines its own hooks, so only one can be linked at a time, and never
+# together with game/.
+set(DENGINE_EXAMPLE "" CACHE STRING "Build examples/<name> in place of game/ (empty builds game/)")
+
+if(DENGINE_EXAMPLE)
+    set(GAME_DIR "${CMAKE_SOURCE_DIR}/examples/${DENGINE_EXAMPLE}")
+    if(NOT IS_DIRECTORY "${GAME_DIR}")
+        message(FATAL_ERROR "DENGINE_EXAMPLE: there is no examples/${DENGINE_EXAMPLE} directory")
+    endif()
+else()
+    set(GAME_DIR "${CMAKE_SOURCE_DIR}/game")
+endif()
+
+file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS "${GAME_DIR}/*.c")
 list(SORT GAME_SOURCES)
 list(LENGTH GAME_SOURCES GAME_SOURCE_COUNT)
-message(STATUS "Game sources found: ${GAME_SOURCE_COUNT}")
+message(STATUS "Game sources found in ${GAME_DIR}: ${GAME_SOURCE_COUNT}")
 
 # A hook defined without including dgame.h has no visible prototype, so it would
 # silently fail to match the engine's signature. Warn on that.
