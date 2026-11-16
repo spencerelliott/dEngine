@@ -19,6 +19,7 @@
 #include "material.h"
 #include "commands.h"
 #include "audio.h"
+#include "physics.h"
 
 
 
@@ -37,6 +38,7 @@ void dEngine_Init(uchar rendererType,int viewPortWidth,int viewPortHeight)
 
 
 	MATLIB_LoadLibraries();
+	PHYS_Init();
 	World_Init();
 	CAM_Init();
 	
@@ -58,7 +60,10 @@ void dEngine_HostFrame(void)
 
 	Comm_Update();
 	CAM_Update();
-	
+
+	/* Costs nothing until the game creates bodies. */
+	PHYS_Update(timediff);
+
 	World_Update();
 	
 	SCR_RenderFrame();

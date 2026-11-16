@@ -93,6 +93,15 @@ it gives both, the CDDA track wins.
 Clips declared that way are retrieved with `Audio_FindClip("data/sounds/door.wav")`.
 Opening a scene stops the music of the previous one and unloads its clips.
 
+Physics :
+=========
+
+The engine ships with a small rigid body simulation sized for the Dreamcast:
+sphere and axis aligned box colliders, gravity, impulse based contacts,
+triggers, collision layers, ray/overlap/sweep queries and a character move.
+It allocates nothing at runtime and runs on a fixed timestep. See
+[docs/PHYSICS.md](docs/PHYSICS.md).
+
 Details :
 =========
 
