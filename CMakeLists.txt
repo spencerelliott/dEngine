@@ -88,9 +88,6 @@ set(
 # Determine whether we are building Debug or Release
 string(TOLOWER ${CMAKE_BUILD_TYPE} CONFIGURATION)
 
-include_directories(GLdc/include)
-link_directories(GLdc/lib/${CONFIGURATION})
-
 if(ENGINE_DEBUG)
     add_definitions(-DENGINE_DEBUG)
 endif()
@@ -126,7 +123,8 @@ if(PLATFORM_DREAMCAST)
 
     add_definitions(-DDREAMCAST)
 
-    link_libraries(GLdc)
+    # GLdc comes from kos-ports (libGL); headers are on the KOS include path
+    link_libraries(GL)
 else()
 
 endif()

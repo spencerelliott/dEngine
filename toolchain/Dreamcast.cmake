@@ -13,12 +13,19 @@ else()
     set(CMAKE_C_COMPILER $ENV{KOS_CC_BASE}/bin/sh-elf-gcc CACHE INTERNAL "" FORCE)
 endif()
 
-add_compile_options(-ml -m4-single-only -ffunction-sections -fdata-sections)
+# Match the FPU ABI KallistiOS was built with (KOS 2.1+ uses -m4-single)
+if(DEFINED ENV{KOS_SH4_PRECISION})
+    set(DC_SH4_PRECISION $ENV{KOS_SH4_PRECISION})
+else()
+    set(DC_SH4_PRECISION -m4-single-only)
+endif()
+
+add_compile_options(-ml ${DC_SH4_PRECISION} -ffunction-sections -fdata-sections)
 
 if($ENV{KOS_SUBARCH} MATCHES naomi)
-    set(CMAKE_EXE_LINKER_FLAGS " -ml -m4-single-only -Wl,-Ttext=0x8c020000 -Wl,--gc-sections -T$ENV{KOS_BASE}/utils/ldscripts/shlelf-naomi.xc -nodefaultlibs" CACHE INTERNAL "" FORCE)
+    set(CMAKE_EXE_LINKER_FLAGS " -ml ${DC_SH4_PRECISION} -Wl,-Ttext=0x8c020000 -Wl,--gc-sections -T$ENV{KOS_BASE}/utils/ldscripts/shlelf-naomi.xc -nodefaultlibs" CACHE INTERNAL "" FORCE)
 else()
-    set(CMAKE_EXE_LINKER_FLAGS " -ml -m4-single-only -Wl,-Ttext=0x8c010000 -Wl,--gc-sections -T$ENV{KOS_BASE}/utils/ldscripts/shlelf.xc -nodefaultlibs" CACHE INTERNAL "" FORCE)
+    set(CMAKE_EXE_LINKER_FLAGS " -ml ${DC_SH4_PRECISION} -Wl,-Ttext=0x8c010000 -Wl,--gc-sections -T$ENV{KOS_BASE}/utils/ldscripts/shlelf.xc -nodefaultlibs" CACHE INTERNAL "" FORCE)
 endif()
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
