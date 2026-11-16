@@ -52,6 +52,7 @@ set(
         src/sh4_math.h
         src/devtools.h
         src/ItextureLoader.h
+        src/audio.h
         src/camera.h
         src/collision.h
         src/commands.h
@@ -83,6 +84,7 @@ set(
 
         src/devtools.c
         src/ItextureLoader.c
+        src/audio.c
         src/camera.c
         src/camera.h
         src/collision.c
@@ -295,7 +297,7 @@ if(PLATFORM_DREAMCAST)
 
     # Everything the engine loads verbatim. Shaders are left out on purpose:
     # the Dreamcast has no use for them.
-    set(ASSET_COPY_EXTENSIONS cp dat map mtl obj md5mesh md5anim scene cfg lbr)
+    set(ASSET_COPY_EXTENSIONS cp dat map mtl obj md5mesh md5anim scene cfg lbr wav)
     set(ASSET_SOURCES "")
 
     foreach(EXTENSION ${ASSET_COPY_EXTENSIONS})

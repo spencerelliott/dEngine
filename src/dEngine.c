@@ -19,6 +19,7 @@
 #include "material.h"
 #include "commands.h"
 #include "game_internal.h"
+#include "audio.h"
 #include "physics.h"
 
 
@@ -34,6 +35,7 @@ void dEngine_Init(uchar rendererType,int viewPortWidth,int viewPortHeight)
 
 	FM_Init();
 
+	Audio_Init();
 
 	INP_Init();
 
@@ -55,6 +57,9 @@ void dEngine_HostFrame(void)
 {
 
 	Timer_tick();
+
+	/* Keeps the streaming music fed. */
+	Audio_Update();
 
 	/* Before Comm_Update so commands the game queues this frame are consumed by
 	   the camera this frame rather than one frame late. */
@@ -82,6 +87,7 @@ void dEngine_Shutdown(void)
 {
 	DG_ShutdownAll();
 	World_UnloadScene();
+	Audio_Shutdown();
 }
 
 int dEngine_ShouldQuit(void)
