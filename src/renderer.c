@@ -11,6 +11,7 @@
 #include <malloc.h>
 #include "stats.h"
 #include "timer.h"
+#include "game_internal.h"
 
 #ifdef USE_PVR_RENDERER
 #include "renderer_pvr.h"
@@ -162,12 +163,16 @@ void SCR_RenderFrame(void)
 	
 	
 	
+	/* The 2D pass is now unconditional: Game_RenderHUD has a weak no-op default
+	   so it is never NULL and cannot be tested for. Set2D is a couple of matrix
+	   loads, which is not worth a second binding mechanism to avoid. */
+	renderer.Set2D();
+
 	if (renderer.statsEnabled)
-	{
-		renderer.Set2D();
 		DrawStats();
-	}
-	
+
+	DG_RenderHUD();
+
 	renderer.StopRendition();
 }
 

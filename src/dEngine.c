@@ -18,6 +18,7 @@
 #include "world.h"
 #include "material.h"
 #include "commands.h"
+#include "game_internal.h"
 #include "audio.h"
 #include "physics.h"
 
@@ -28,22 +29,24 @@ void dEngine_Init(uchar rendererType,int viewPortWidth,int viewPortHeight)
 {
 	FS_InitFilesystem();
 	SCR_Init(rendererType,viewPortWidth,viewPortHeight);
-	
+
 	TEXT_InitTextureLibrary();
 
-	
+
 	FM_Init();
 
 	Audio_Init();
 
+	INP_Init();
 
 	MATLIB_LoadLibraries();
 	PHYS_Init();
 	World_Init();
 	CAM_Init();
-	
-	
-	
+
+	/* Last: a scene and a camera now exist, which is what Game_Init expects. */
+	DG_Startup();
+
 	Timer_resetTime();
 	Timer_Resume();
 }
@@ -52,11 +55,15 @@ void dEngine_Init(uchar rendererType,int viewPortWidth,int viewPortHeight)
 
 void dEngine_HostFrame(void)
 {
-	
+
 	Timer_tick();
 
 	/* Keeps the streaming music fed. */
 	Audio_Update();
+
+	/* Before Comm_Update so commands the game queues this frame are consumed by
+	   the camera this frame rather than one frame late. */
+	DG_FrameBegin();
 
 	Comm_Update();
 	CAM_Update();
@@ -65,9 +72,27 @@ void dEngine_HostFrame(void)
 	PHYS_Update(timediff);
 
 	World_Update();
-	
+
+	DG_FrameLate();
+
 	SCR_RenderFrame();
 
+	/* After rendering: this is where entities are freed and scenes swap, so it
+	   must not run while the renderer is walking map[]. */
+	DG_FrameEnd();
+
+}
+
+void dEngine_Shutdown(void)
+{
+	DG_ShutdownAll();
+	World_UnloadScene();
+	Audio_Shutdown();
+}
+
+int dEngine_ShouldQuit(void)
+{
+	return DG_QuitRequested();
 }
 
 uint num_screenshot=0;

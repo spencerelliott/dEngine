@@ -295,6 +295,21 @@ void RenderEntitiesF(void)
 	for(i=0; i < num_map_entities; i++)
 	{
 		entity = &map[i];
+
+		/* Destroyed entities leave holes behind so object handles stay valid. */
+		if (!(entity->flags & ENTITY_FLAG_ACTIVE))
+			continue;
+
+		if (!(entity->flags & ENTITY_FLAG_VISIBLE))
+			continue;
+
+		/* An entity whose usemtl did not resolve has a NULL material, and a
+		   material with no diffuse texture has a NULL slot. Both used to be
+		   dereferenced unguarded a few lines below; runtime spawning of
+		   arbitrary model paths makes that far easier to hit. */
+		if (!entity->material || !entity->material->textures[TEXTURE_DIFFUSE])
+			continue;
+
 		glPushMatrix();
 			glMultMatrixf(entity->matrix);
 		

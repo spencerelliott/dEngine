@@ -19,6 +19,8 @@
 
 void dEngine_Init(uchar rendererType, int viewPortWidth, int viewPortHeight);
 void dEngine_HostFrame(void);
+void dEngine_Shutdown(void);
+int  dEngine_ShouldQuit(void);
 void dEngine_WriteScreenshot(char* directory, uchar rotate);
 
 

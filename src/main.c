@@ -15,6 +15,7 @@
 #include "renderer.h"
 #include "world.h"
 #include "profiler.h"
+#include "game_internal.h"
 
 KOS_INIT_FLAGS(INIT_DEFAULT);
 
@@ -62,6 +63,8 @@ void print_handler(devtools_header_t *hdr) {
 }
 
 int main(int argc, char** argv) {
+    dg_config_t cfg;
+
 #if PRINT_FPS
     uint32_t counter = 0;
 #endif
@@ -81,12 +84,22 @@ int main(int argc, char** argv) {
 
     renderer.statsEnabled = 1;
 
+    /* Engine defaults, then a chance for a game/ script to override them. This
+       has to happen before dEngine_Init because it can pick the boot scene. */
 #ifdef USE_PVR_RENDERER
     /* The PVR is brought up by the renderer itself, inside SCR_Init. */
-    dEngine_Init(PVR_RENDERER, 640, 480);
+    cfg.rendererType = PVR_RENDERER;
 #else
-    dEngine_Init(GL_11_RENDERER, 640, 480);
+    cfg.rendererType = GL_11_RENDERER;
 #endif
+    cfg.width = 640;
+    cfg.height = 480;
+    cfg.bootScene = 0;
+    cfg.debugCamera = 1;
+
+    DG_ApplyConfig(&cfg);
+
+    dEngine_Init(cfg.rendererType, cfg.width, cfg.height);
 
     struct mallinfo malloc_info = mallinfo();
     printf("Memory stats after initializing:\n");
@@ -106,9 +119,9 @@ int main(int argc, char** argv) {
 
     profiler_init("/pc/dEngine_prof.out");
     profiler_start();
-    while (count < 30) {
+    while (count < 30 && !dEngine_ShouldQuit()) {
 #else
-    while(!check_start()) {
+    while(!dEngine_ShouldQuit() && !check_start()) {
 #if ENABLE_DEVTOOLS
         devtools_process_messages();
 #endif
@@ -139,6 +152,8 @@ int main(int argc, char** argv) {
 #if ENABLE_DEVTOOLS
     devtools_cleanup();
 #endif
+
+    dEngine_Shutdown();
 
     return 0;
 }
