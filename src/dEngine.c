@@ -18,6 +18,7 @@
 #include "world.h"
 #include "material.h"
 #include "commands.h"
+#include "audio.h"
 #include "physics.h"
 
 
@@ -32,10 +33,10 @@ void dEngine_Init(uchar rendererType,int viewPortWidth,int viewPortHeight)
 
 	
 	FM_Init();
-	
 
-	
-	
+	Audio_Init();
+
+
 	MATLIB_LoadLibraries();
 	PHYS_Init();
 	World_Init();
@@ -54,7 +55,9 @@ void dEngine_HostFrame(void)
 	
 	Timer_tick();
 
-	
+	/* Keeps the streaming music fed. */
+	Audio_Update();
+
 	Comm_Update();
 	CAM_Update();
 
