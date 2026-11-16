@@ -1,23 +1,23 @@
 newmtl textures/object/ikal 
-map_Kd data/texturesPVR/object/ikal_d.png.pvr
-BumpKd data/texturesPVR/object/default_local.png.pvr 
-SpecKd data/texturesPVR/object/default_s.png.pvr
+map_Kd data/texturesPVR/object/ikal_d.png.argb4444.pvr
+BumpKd data/texturesPVR/object/default_local.png.argb4444.pvr 
+SpecKd data/texturesPVR/object/default_s.png.argb4444.pvr
 illum 30
 
 newmtl textures/object/rga 
-map_Kd data/texturesPVR/object/rga_d.png.pvr
-BumpKd data/texturesPVR/object/default_local.png.pvr 
-SpecKd data/texturesPVR/object/default_s.png.pvr
+map_Kd data/texturesPVR/object/rga_d.png.argb4444.pvr
+BumpKd data/texturesPVR/object/default_local.png.argb4444.pvr 
+SpecKd data/texturesPVR/object/default_s.png.argb4444.pvr
 illum 30
 
 newmtl textures/object/FRA200L 
-map_Kd data/texturesPVR/object/FRA200L_d.png.pvr
-BumpKd data/texturesPVR/object/default_local.png.pvr 
-SpecKd data/texturesPVR/object/default_s.png.pvr
+map_Kd data/texturesPVR/object/FRA200L_d.png.argb4444.pvr
+BumpKd data/texturesPVR/object/default_local.png.argb4444.pvr 
+SpecKd data/texturesPVR/object/default_s.png.argb4444.pvr
 illum 30
 
 newmtl textures/object/FRA200F 
-map_Kd data/texturesPVR/object/FRA200F_d.png.pvr
-BumpKd data/texturesPVR/object/default_local.png.pvr 
-SpecKd data/texturesPVR/object/default_s.png.pvr
+map_Kd data/texturesPVR/object/FRA200F_d.png.argb4444.pvr
+BumpKd data/texturesPVR/object/default_local.png.argb4444.pvr 
+SpecKd data/texturesPVR/object/default_s.png.argb4444.pvr
 illum 30
