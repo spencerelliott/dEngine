@@ -726,7 +726,7 @@ static void Audio_ApplyCDDAVolume(void)
  */
 static uchar Audio_IsCDDATrack(int track)
 {
-    cd_toc_t toc;
+    CDROM_TOC toc;
     uchar readToc = 0;
     int first;
     int last;
